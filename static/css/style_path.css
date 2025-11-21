@@ -1,0 +1,110 @@
+body {
+
+.card {
+    color: white;
+}
+.surcard {
+    background-color: #131313;
+    height: fit-content;
+    padding-top: 10px;
+    padding-bottom: 5px;
+    }    
+.surcard_final {
+    background-color: #131313;
+    height: fit-content;
+    margin-left: 10px;
+    margin-right: 10px;
+    margin-bottom: 10px;
+    align-items: center;
+    vertical-align: center;
+    text-align: center;
+    padding: 25px;
+    padding-top: 35px;
+    } 
+.subcard {
+        margin-left: 10px;
+        margin-right: 10px;
+        margin-bottom: 10px;
+        height: fit-content;
+        background-color: #212121;
+        align-items: center;
+        vertical-align: center;
+        text-align: center;
+        padding: 12.5px;
+    }
+.sccard {
+        background-color: #131313;
+        margin-top: 2.5px;
+        margin-bottom: 15px;
+        height: fit-content;
+        width: 300px;
+        color: white;
+        padding: 15px;
+        padding-bottom: 5px;
+        text-align: left;
+    }
+.valcard {
+        margin-top: 15px;
+        margin-bottom: 15px;
+        color: white;
+        height: 50px;
+        width: 250px;
+        text-align: center;
+        padding-top: 7.5px;
+}
+.button_more {
+        background-color: #212121;
+        color: #5271ff; 
+      }
+      .sp_card {
+        background-color: #131313;
+        height: 500px;
+        }    
+    .sp_subcard {
+        margin-left: 10px;
+        margin-right: 10px;
+        margin-top: 10px;
+        height: fit-content;
+        background-color: #212121;
+        align-items: center;
+        vertical-align: center;
+        text-align: center;
+    }
+    .sp_subcard1 {
+        margin-left: 10px;
+        margin-right: 10px;
+        margin-top: 10px;
+        background-color: #212121;
+        align-items: center;
+        vertical-align: center;
+        text-align: center;
+    }
+    .sp_valcard {
+        margin-top: 15px;
+        margin-bottom: 15px;
+        height: 50px;
+        width: 250px;
+        text-align: center;
+        padding-top: 7.5px;
+    }
+    .sp_valcard h3 {
+        color: white;
+    }
+    .button_details {
+        background: #131313;
+        color: white;
+        border: 1px solid #212121;  
+    }
+    .sp_titlecard {
+        margin-left: 10px;
+        margin-right: 10px;
+        margin-top: 10px;
+        height: fit-content;
+        background-color: #212121;
+        align-items: center;
+        vertical-align: center;
+        text-align: center;
+        padding: 25px;
+        color: white;
+    }
+}

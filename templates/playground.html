@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="en"
+{% if ui_data %}
+style="--primary-color: {{ui_data['prim_color']}}; --secondary-color: {{ui_data['sec_color']}};"
+{% endif %}
+>
+
+<head>
+    <!-- Google Analytics Tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-GGJ9LB2060"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+
+        gtag('config', 'G-GGJ9LB2060');
+    </script>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ _('Chat') }}</title>
+    <link rel='shortcut icon' type='image/png' href="{{url_for('static', filename='img/favicon.png')}}" />
+    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    {% if ui_data and ui_data['white_mode'] %}
+    {% set theme_prefix = 'css/white_theme/' %}
+    {% else %}
+    {% if white_mode %}
+    {% set theme_prefix = 'css/white_theme/' %}
+    {% else %}
+    {% set theme_prefix = 'css/' %}
+    {% endif %}
+    {% endif %}
+
+    {% set stylesheets = [
+        'styles.css',
+        'style_path.css',
+        'style_stock_page.css',
+        'style_workbench.css',
+        'b2b_basics.css',
+        'format_x.css'
+    ] %}
+    
+    {% for css_file in stylesheets %}
+    <link rel="stylesheet" href="{{ url_for('static', filename=theme_prefix ~ css_file) }}">
+    {% endfor %}
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script> 
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.4.2/mammoth.browser.min.js"></script>
+    <script src="{{url_for('static', filename='js/playground/auto_resize_textarea.js')}}"></script>
+    <script type="module" src="{{url_for('static', filename='js/playground/playground.js')}}"></script>
+    <script type="module" src="{{url_for('static', filename='js/playground/file_upload.js')}}"></script>
+    <script src="https://unpkg.com/@dotlottie/player-component@2.7.12/dist/dotlottie-player.mjs" type="module"></script>
+</head>
+
+<body>
+    {% if playground %}
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top custom-navbar">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#"><img class="logo" src="{{url_for('static', filename='img/white_icons/logo.png' if white_mode else 'img/logo.png')}}" alt="Logo"></a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav gap-4 mr-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/dashboard">{{ _('Dashboard') }}</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link aktiv" href="#">{{ _('Chat') }}</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/assistant">{{ _('Assistant') }}</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/modules">{{ _('Modules') }}</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/api/page">{{ _('API') }}</a>
+                    </li>
+                    <!-- <li class="nav-item">
+                        <a class="nav-link" href="/b2b_help">Help</a>
+                    </li> -->
+                </ul>
+                <div class="d-flex flex-column flex-md-row gap-2 abstand mt-1">
+                    {% if resources %}
+                        {% for resource in resources[:10] %}
+                        <div data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-custom-class="primary-tooltip" title="{{resource['addon_name']}}">
+                        <a href="/modules/addon/info?id={{resource['addon_id']}}">
+                            <div class="circle-icon-2">
+                                <i class="{{resource['addon_icon']}}"></i>
+                            </div>
+                        </a>
+                        </div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+                <div class="d-flex flex-column flex-md-row gap-2 abstand">
+                    <a href="/settings" type="button" class="btn dbutton"><i class="bi bi-gear"></i></a>
+                    <a href="/profile" type="button" class="btn dbutton"><i class="bi bi-person"></i></a>
+                    <a href="/auth/logout" type="button" class="btn dbutton"><i class="bi bi-box-arrow-right"></i></a>
+                </div>
+            </div>
+        </div>
+    </nav>
+    {% else %}
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top custom-navbar">
+        <div class="container-fluid">
+            {% if user_id %}
+            {% if ui_data %}
+            <a class="navbar-brand" href="#">
+                <img class="logo"
+                src="{{ url_for('static', filename=ui_data['logo'] if ui_data and ui_data['logo'] else 'img/logo.png') }}"
+                alt="Logo"
+                >
+            </a>
+            {% endif %}
+            {% endif %}
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav gap-4 mr-auto">
+                    {% if user_id %}
+                    {% if ui_data %}
+                    <li class="nav-item">
+                        <a class="nav-link aktiv" href="#">{{ _('Chat') }}</a>
+                    </li>
+                    {% if ui_data['file_search'] %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="/modules/file_search/upload/ua">File Search</a>
+                    </li>
+                    {% endif %}
+                    {% if ui_data['fulfill_documents'] %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="/modules/fulfill_documents/ua">Fulfill Documents</a>
+                    </li>
+                    {% endif %}
+                    {% if ui_data['profiling'] %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="/modules/profiling/ua">Profiling</a>
+                    </li>
+                    {% endif %}
+                    {% if ui_data['voice'] %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="/modules/voice/ua">Voice</a>
+                    </li>
+                    {% endif %}
+                    {% if ui_data['workflows'] %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="/modules/workflows/ua">Workflows</a>
+                    </li>
+                    {% endif %}
+                    {% endif %}
+                    {% endif %}
+                </ul>
+                <div class="d-flex flex-column flex-md-row gap-2 abstand">
+                    <a href="/modules/user_access/ui/settings" type="button" class="btn dbutton" title="Settings"><i class="bi bi-gear"></i></a>
+                    <a href="/auth/logout" type="button" class="btn dbutton"><i class="bi bi-box-arrow-right"></i></a>
+                </div>
+            </div>
+        </div>
+    </nav>
+    {% endif %}
+
+    <section style="margin-top: 100px; margin-bottom: 100px;">
+        <div class="container standard_container">
+            {% if alert %}
+            {% if alert['message'] %}
+            <!-- Success Alert -->
+            <div class="alert alert-dark success_alert" role="alert">
+                <b>{{ _('Success:') }}</b>
+                {{alert['message']}}
+            </div>
+            {% endif %}
+            {% if alert['error'] %}
+            <!-- Failure Alert -->
+            <div class="alert alert-dark failure_alert" role="alert">
+                <b>{{ _('Warning:') }}</b>
+                {{alert['error']}}
+            </div>
+            {% endif %}
+            {% endif %}
+        </div>
+
+        {% if playground %}
+        <!-- Welcome Message Playround -->
+        <div class="container mes">
+            <div class="d-flex justify-content-start">
+                <div class="div">
+                    <img src="{{url_for('static', filename='img/white_icons/mes_icon.png' if white_mode else 'img/mes_icon.png')}}" width="50" height="50" alt="Logo">
+                </div>
+                <div class="col-max-7 card message">
+                    <div class="card-body">
+                        {{ _('Hello, this is the') }} <b>{{ _('Chat') }}</b>. <br><br>
+                        {{ _('I am your assistant and I am here to help you with your questions.') }} <br>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if not playground %}
+        <!-- Welcome Message UI -->
+        <div class="container mes">
+            <div class="d-flex justify-content-start">
+                <div class="div">
+                    <img 
+                    {% if ui_data %}
+                    {% if ui_data['assistant_icon'] == 'img/mes_icon.png' %}
+                    src="{{ url_for('static', filename='img/white_icons/mes_icon.png' if ui_data and ui_data['white_mode'] else 'img/mes_icon.png') }}"
+                    {% else %}
+                    src="{{ url_for('static', filename=ui_data['assistant_icon']) }}"
+                    {% endif %}
+                    {% endif %}
+                    width="50" height="50" alt="Logo"
+                    >
+                </div>
+                <div class="col-max-7 card message">
+                    <div class="card-body">
+                        {% if user_id %}
+                        {% if ui_data %}
+                        {{ _('Hello, I am') }} <b>{{ui_data['app_name']}}</b> {{ _('from') }} {{ui_data['company_name']}}. <br>
+                        {{ _('How can I assist you today?') }}
+                        {% endif %}
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <div id="messages">
+            <!-- hier Messages einfügen -->
+        </div>
+    </section>
+
+    {% if user_id %}
+    <!-- INPUT BAR -->
+    <div class="container fixed-bottom">
+        <form id="chat-form" action="" method="POST">
+        <div class="input-group x_input_group">
+            <textarea class="form-control x_input" name="user_message" id="user_message" rows="1" style="resize: none; overflow-y: auto; max-height: 150px;"></textarea>
+            <!-- <button id="cancel_run_button" class="btn x_a_button" style="display: none;" type="button"><i class="bi bi-stop-circle-fill x_a_button"></i></button>  -->
+            <button id="message_submit_button" class="btn x_a_button" type="submit"><i class="bi bi-arrow-up-circle-fill"></i></button>       
+        </div>
+        <div class="input-group x_input_button_group mt-1 mb-2 gap-2">
+            <!-- Chats -->
+            <div data-bs-toggle="tooltip" data-bs-custom-class="secondary-tooltip" title="Chats">
+            <button class="btn x_input_button" type="button" data-bs-toggle="offcanvas" data-bs-target="#chatrep">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-list" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5"/>
+                </svg>
+            </button>
+            </div>
+            <!-- Settings -->
+                <!-- Hide Appendices -->
+                <input type="hidden" id="hide_appendix_config" name="hide_appendix_config" value="{% if settings and settings['hide_appendix_config'] %}True{% else %}False{% endif %}">
+            <!-- UI Instructions for JS -->
+                <!-- Assistant Icon -->
+                <input type="hidden" id="assistant_icon" name="assistant_icon" value="{% if ui_data and ui_data['assistant_icon'] %}{{ui_data['assistant_icon']}}{% else %}False{% endif %}">
+                <!-- User Icon -->
+                <input type="hidden" id="user_icon" name="user_icon" value="{% if ui_data and ui_data['user_icon'] %}{{ui_data['user_icon']}}{% else %}False{% endif %}">
+                <!-- Custom Animation -->
+                <input type="hidden" id="custom_animation" name="custom_animation" value="{% if ui_data and ui_data['animation'] %}{{ui_data['animation']}}{% else %}False{% endif %}">
+                <!-- White Mode -->
+                <input type="hidden" id="white_mode" name="white_mode" 
+                value="    {% if ui_data and ui_data['white_mode'] %}
+                True
+                {% else %}
+                {% if white_mode %}
+                True
+                {% else %}
+                False
+                {% endif %}
+                {% endif %}"
+                >
+            <!-- START resource checks -->
+                <!-- Visualization -->
+                <input type="hidden" id="check_1" name="check_1" value="{{check_1}}">
+                <!-- Analytics -->
+                <input type="hidden" id="check_6" name="check_6" value="{{check_6}}">
+                <!-- Tables -->
+                <input type="hidden" id="check_15" name="check_15" value="{{check_15}}">
+                <!-- File Upload -->
+                {% if check_7 %}
+                {% if check_7 == 'True' %}
+                <div data-bs-toggle="tooltip" data-bs-custom-class="secondary-tooltip" title="File Upload">
+                <button type="button" class="btn x_input_button" data-bs-toggle="offcanvas" data-bs-target="#fileupload"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-earmark-plus-fill" viewBox="0 0 16 16">
+                    <path d="M9.293 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.707A1 1 0 0 0 13.707 4L10 .293A1 1 0 0 0 9.293 0M9.5 3.5v-2l3 3h-2a1 1 0 0 1-1-1M8.5 7v1.5H10a.5.5 0 0 1 0 1H8.5V11a.5.5 0 0 1-1 0V9.5H6a.5.5 0 0 1 0-1h1.5V7a.5.5 0 0 1 1 0"/>
+                </svg>
+                </button>
+                </div>
+                {% endif %}
+                {% endif %}
+                <!-- Profiling -->
+                {% if check_5 %}
+                {% if check_5 == 'True' %}
+                <div data-bs-toggle="tooltip" data-bs-custom-class="secondary-tooltip" title="Profiling">
+                <button id="check_5" class="btn x_input_button" type="button" data-bs-toggle="offcanvas" data-bs-target="#profiling_offcanvas">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-person-lines-fill" viewBox="0 0 16 16">
+                        <path d="M6 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6m-5 6s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zM11 3.5a.5.5 0 0 1 .5-.5h4a.5.5 0 0 1 0 1h-4a.5.5 0 0 1-.5-.5m.5 2.5a.5.5 0 0 0 0 1h4a.5.5 0 0 0 0-1zm2 3a.5.5 0 0 0 0 1h2a.5.5 0 0 0 0-1zm0 3a.5.5 0 0 0 0 1h2a.5.5 0 0 0 0-1z"/>
+                    </svg>
+                </button>
+                </div>
+                {% endif %}
+                {% endif %}
+                {% if check_focus %}
+                {% if check_focus == 'True' %}
+                <div data-bs-toggle="tooltip" data-bs-custom-class="secondary-tooltip" title="Focus">
+                <button id="check_focus" class="btn x_input_button" type="button" data-bs-toggle="offcanvas" data-bs-target="#focus_offcanvas">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-bullseye" viewBox="0 0 16 16">
+                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
+                        <path d="M8 13A5 5 0 1 1 8 3a5 5 0 0 1 0 10m0 1A6 6 0 1 0 8 2a6 6 0 0 0 0 12"/>
+                        <path d="M8 11a3 3 0 1 1 0-6 3 3 0 0 1 0 6m0 1a4 4 0 1 0 0-8 4 4 0 0 0 0 8"/>
+                        <path d="M9.5 8a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0"/>
+                    </svg>
+                </button>
+                </div>
+                {% endif %}
+                {% endif %}
+            <!-- END resource checks -->
+            <!-- Example Prompts -->
+            <div data-bs-toggle="tooltip" data-bs-custom-class="secondary-tooltip" title="Example Prompts">
+            <button type="button" class="btn x_input_button example_offcanvas_button" data-bs-toggle="offcanvas" data-bs-target="#exampleprompts">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-input-cursor-text" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M5 2a.5.5 0 0 1 .5-.5c.862 0 1.573.287 2.06.566.174.099.321.198.44.286.119-.088.266-.187.44-.286A4.17 4.17 0 0 1 10.5 1.5a.5.5 0 0 1 0 1c-.638 0-1.177.213-1.564.434a3.5 3.5 0 0 0-.436.294V7.5H9a.5.5 0 0 1 0 1h-.5v4.272c.1.08.248.187.436.294.387.221.926.434 1.564.434a.5.5 0 0 1 0 1 4.17 4.17 0 0 1-2.06-.566A5 5 0 0 1 8 13.65a5 5 0 0 1-.44.285 4.17 4.17 0 0 1-2.06.566.5.5 0 0 1 0-1c.638 0 1.177-.213 1.564-.434.188-.107.335-.214.436-.294V8.5H7a.5.5 0 0 1 0-1h.5V3.228a3.5 3.5 0 0 0-.436-.294A3.17 3.17 0 0 0 5.5 2.5.5.5 0 0 1 5 2"/>
+                    <path d="M10 5h4a1 1 0 0 1 1 1v4a1 1 0 0 1-1 1h-4v1h4a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-4zM6 5V4H2a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h4v-1H2a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z"/>
+                </svg>
+            </button>
+            </div>
+        </div>
+        </form>
+    </div>
+    {% endif %}
+
+    <!-- NOT VISIBLE -->
+    <!-- Chatlist Offcanvas -->
+    <div class="offcanvas offcanvas-start {% if not (ui_data.white_mode or white_mode) %}text-bg-dark{% endif %}" data-bs-scroll="true"
+        tabindex="-1" id="chatrep" aria-labelledby="offcanvasWithBothOptionsLabel" style="width: fit-content;">
+        <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="offcanvasWithBothOptionsLabel" style="padding-left: 12px;"></h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body" style="text-align: center;">
+            <p style="color: #A0A0A0; margin-bottom: 25px;">{{ _('Chats') }}</p>
+
+            {% if chatlist %}
+            {% for chat in chatlist %}
+            <!-- Chats-->
+            <div class="card workbench_sccard {% if chat.activity %}filled_primary{% endif %}">
+                <div class="row">
+                    <div class="col-8">
+                        <a href="/playground/chat/select?id={{chat.thread_id}}" style="color: white; text-decoration: none;">
+                            {{chat.keyword}}
+                        </a>
+                        <!-- a hidden input field to transmit information to the external js files -->
+                        {% if chat.activity %}
+                            <input type="hidden" id="current_thread_id" name="current_thread_id" value="{{chat.thread_id}}">
+                        {% endif %}
+                    </div>
+                    <div class="col-2">
+                        <div class="col" style="text-align: right;">
+                            <a type="button" data-bs-toggle="modal" data-bs-target="#change_keyword_{{chat.thread_id}}" class="wb_closer"><i style="color: #a0a0a0;" class="bi bi-pencil-square"></i></a>
+                        </div>
+                    </div>
+                    <div class="col-2">
+                        <div class="col" style="text-align: right;">
+                            <a href="/playground/chat/delete?id={{chat.thread_id}}" type="button" class="wb_closer"><i style="color: #a0a0a0;" class="bi bi-trash-fill"></i></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+            {% endif %}
+
+            <!-- Hier neue Chatkarten einfügen -->
+
+            <a href="/playground/chat/new">
+                <div class="card workbench_pluscard">
+                    <div class="row">
+                        <div class="col">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" 
+                            {% if ui_data and ui_data['prim_color'] %}
+                            fill="{{ui_data['prim_color']}}"
+                            {% else %} 
+                            {% if ui_data and ui_data['white_mode'] %}
+                            fill="#000000"
+                            {% else %}
+                            {% if white_mode %}
+                            fill="#000000"
+                            {% else %}
+                            fill="#F6D8AE"
+                            {% endif %}
+                            {% endif %}
+                            {% endif %} 
+                            class="bi bi-plus-square-dotted" viewBox="0 0 16 16">
+                                <path d="M2.5 0q-.25 0-.487.048l.194.98A1.5 1.5 0 0 1 2.5 1h.458V0zm2.292 0h-.917v1h.917zm1.833 0h-.917v1h.917zm1.833 0h-.916v1h.916zm1.834 0h-.917v1h.917zm1.833 0h-.917v1h.917zM13.5 0h-.458v1h.458q.151 0 .293.029l.194-.981A2.5 2.5 0 0 0 13.5 0m2.079 1.11a2.5 2.5 0 0 0-.69-.689l-.556.831q.248.167.415.415l.83-.556zM1.11.421a2.5 2.5 0 0 0-.689.69l.831.556c.11-.164.251-.305.415-.415zM16 2.5q0-.25-.048-.487l-.98.194q.027.141.028.293v.458h1zM.048 2.013A2.5 2.5 0 0 0 0 2.5v.458h1V2.5q0-.151.029-.293zM0 3.875v.917h1v-.917zm16 .917v-.917h-1v.917zM0 5.708v.917h1v-.917zm16 .917v-.917h-1v.917zM0 7.542v.916h1v-.916zm15 .916h1v-.916h-1zM0 9.375v.917h1v-.917zm16 .917v-.917h-1v.917zm-16 .916v.917h1v-.917zm16 .917v-.917h-1v.917zm-16 .917v.458q0 .25.048.487l.98-.194A1.5 1.5 0 0 1 1 13.5v-.458zm16 .458v-.458h-1v.458q0 .151-.029.293l.981.194Q16 13.75 16 13.5M.421 14.89c.183.272.417.506.69.689l.556-.831a1.5 1.5 0 0 1-.415-.415zm14.469.689c.272-.183.506-.417.689-.69l-.831-.556c-.11.164-.251.305-.415.415l.556.83zm-12.877.373Q2.25 16 2.5 16h.458v-1H2.5q-.151 0-.293-.029zM13.5 16q.25 0 .487-.048l-.194-.98A1.5 1.5 0 0 1 13.5 15h-.458v1zm-9.625 0h.917v-1h-.917zm1.833 0h.917v-1h-.917zm1.834-1v1h.916v-1zm1.833 1h.917v-1h-.917zm1.833 0h.917v-1h-.917zM8.5 4.5a.5.5 0 0 0-1 0v3h-3a.5.5 0 0 0 0 1h3v3a.5.5 0 0 0 1 0v-3h3a.5.5 0 0 0 0-1h-3z"/>
+                              </svg>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+    
+
+    <!-- Example Propmts Offcanvas -->
+    <div class="offcanvas offcanvas-end {% if not (ui_data.white_mode or white_mode) %}text-bg-dark{% endif %}" data-bs-scroll="true" data-bs-backdrop="false"
+        tabindex="-1" id="exampleprompts" aria-labelledby="offcanvasWithBothOptionsLabel" style="width: fit-content;">
+        <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="offcanvasWithBothOptionsLabel" style="padding-left: 12px;"></h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body" style="text-align: center; display: block;">
+            <p style="color: #A0A0A0; margin-bottom: 25px;">{{ _('Example Prompts') }}</p>
+            <div id="example_prompts_field">
+                <!-- Hier die Beispielanfragen rendern -->
+            </div>
+
+            <!-- Add new Example -->
+            <form action="/playground/example_prompts/save" method="post">
+            <div class="card c_card" style="text-align: left;">
+                <p class="header">{{ _('New Example') }}</p>
+                <textarea class="form-control" name="prompt_to_save" maxlength="500" id="example_prompt_textarea"></textarea>
+                <small class="text-muted mt-2" id="char_count">0/500</small>
+                <br>
+                <div style="text-align: right;">
+                    <button type="submit" class="btn e_button">+</button>
+                </div>
+            </div>
+            </form>
+        </div>
+    </div>
+
+
+    <!-- File Upload Offcanvas -->
+    <div class="offcanvas offcanvas-end {% if not (ui_data.white_mode or white_mode) %}text-bg-dark{% endif %}" data-bs-scroll="true"
+        tabindex="-1" id="fileupload" aria-labelledby="offcanvasWithBothOptionsLabel" style="width: fit-content;">
+        <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="offcanvasWithBothOptionsLabel" style="padding-left: 12px;"></h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body" style="text-align: center;">
+            <p style="color: #A0A0A0; margin-bottom: 25px;">{{ _('File Upload') }}</p>
+
+            <div class="card b_card">
+                <div id="loading_bar">
+                    <!-- Insert upload loading bare here -->                               
+                </div>
+                <form id="myForm" action="/modules/file_search/upload" method="POST" enctype="multipart/form-data">
+                    <!-- ID for Playground -->
+                    <input type="hidden" id="playground_check" name="playground_check" value="True">
+                    <!-- File upload -->
+                    <div class="card c_card upload-container">
+                        <p class="header">{{ _('Upload File') }}</p>
+                        <div id="dropzone" class="dropzone">
+                            <p>{{ _('Drag & Drop your files here or click to browse your files') }}</p>
+                            <input type="file" class="file-input file_input_hide" id="vfgert" name="file" multiple accept=".pdf,.docx,.doc,.txt,.xlsx,.xls,.pptx,.ppt,.csv,.rtf,.odt,.ods,.odp,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain">
+                        </div>
+                        <!-- Hier werden die Dateien angezeigt -->
+                        <ul id="file-list" class="file-list" style="padding-bottom: 0px;"></ul>
+                    </div>
+                    <!-- Description
+                    <div class="card c_card">
+                        <p class="header">Enter Description</p>
+                        <input class="form-control input_regular" type="text" name="description">
+                    </div> -->
+                    <!-- Submit -->
+                    <div class="e_card">
+                        <button type="submit" class="btn e_button" id="upload_button">
+                            {{ _('Upload') }}
+                        </button>
+                    </div>
+                </form>
+            </div> 
+        </div>
+    </div>
+
+    <!-- Preview Offcanvas -->
+    <div class="offcanvas offcanvas-end {% if not (ui_data.white_mode or white_mode) %}text-bg-dark{% endif %}" data-bs-scroll="true"
+        tabindex="-1" id="preview_offcanvas" aria-labelledby="offcanvasWithBothOptionsLabel" style="width: fit-content;">
+        <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="offcanvasWithBothOptionsLabel" style="padding-left: 12px;"></h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body" style="text-align: center; width: fit-content;">
+            <div id="preview_offcanvas_body">
+                <!-- Titel -->
+            </div>
+            <div id="preview-card" class="card b_card preview_card" style="padding-top: 10px;">
+                <!-- Element zur Anzeige der Datei -->
+                <div id="file-preview"></div>
+
+                <!-- Fehlermeldung -->
+                <div id="error-message"></div>
+            </div> 
+        </div>
+    </div>
+
+    <!-- URL Offcanvas -->
+    <div class="offcanvas offcanvas-end {% if not (ui_data.white_mode or white_mode) %}text-bg-dark{% endif %}" data-bs-scroll="true"
+        tabindex="-1" id="url_offcanvas" aria-labelledby="offcanvasWithBothOptionsLabel">
+        <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="offcanvasWithBothOptionsLabel" style="padding-left: 12px;"></h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body" style="text-align: center;">
+            <p style="color: #A0A0A0; margin-bottom: 25px;">{{ _('Web Sources') }}</p>
+            <div id="url-space">
+                <!-- Insert URL cards -->
+            </div>
+        </div>
+    </div>
+
+    {% if check_focus %}
+    {% if check_focus == 'True' %}
+    <!-- Focus Offcanvas -->
+    <div class="offcanvas offcanvas-end {% if not (ui_data.white_mode or white_mode) %}text-bg-dark{% endif %}" data-bs-scroll="true"
+        tabindex="-1" id="focus_offcanvas" aria-labelledby="offcanvasWithBothOptionsLabel">
+        <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="offcanvasWithBothOptionsLabel" style="padding-left: 12px;"></h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body" style="text-align: center;">
+            <p style="color: #A0A0A0; margin-bottom: 25px;">{{ _('Focus') }}</p>
+
+        {% if focus_data %}
+  
+            {% if focus_data['labels'] %}
+            {% for label in focus_data['labels'] %}
+            <!-- Labels -->
+            <div class="card focus_card {% if label['activity'] %}filled_primary{% endif %}">
+                <!-- Focus Element -->
+                <div class="row">
+                    <div class="col-2" style="color: {{label['color']}};">
+                        <i class="bi bi-tag-fill"></i>
+                    </div>
+                    <div class="col-10">
+                        <a id="label_{{label['id']}}" type="button" class="focus_action_button">
+                            {{label['name']}}
+                        </a>
+                    </div>
+                </div>
+            </div> 
+            {% endfor %}
+            {% endif %}
+
+            {% if focus_data['database'] %}
+            <!-- Database -->
+            <div class="card focus_card {% if focus_data['database']['activity'] %}filled_primary{% endif %}">
+                <!-- Focus Element -->
+                <div class="row">
+                    <div class="col-2">
+                        <i class="bi bi-database-fill"></i>
+                    </div>
+                    <div class="col-10">
+                        <a id="database_igguzouzgzgu" type="button" class="focus_action_button">
+                            {{focus_data['database']['name']}}
+                        </a>
+                    </div>
+                </div>
+            </div> 
+            {% endif %}
+
+            {% if focus_data['files'] %}
+            {% for file in focus_data['files'] %}
+            <!-- Files -->
+            <div class="card focus_card {% if file['activity'] %}filled_primary{% endif %}">
+                <!-- Focus Element -->
+                <div class="row">
+                    <div class="col-2">
+                        <i class="bi bi-file-earmark-text-fill"></i>
+                    </div>
+                    <div class="col-10">
+                        <a id="file_{{file['id']}}" type="button" class="focus_action_button">
+                            {{file['name']}}
+                        </a>
+                    </div>
+                </div>
+            </div> 
+            {% endfor %}
+            {% endif %}
+
+            {% if focus_data['tables'] %}
+            {% for table in focus_data['tables'] %}
+            <!-- Files -->
+            <div class="card focus_card {% if table['activity'] %}filled_primary{% endif %}">
+                <!-- Focus Element -->
+                <div class="row">
+                    <div class="col-2">
+                        <i class="bi bi-table"></i>
+                    </div>
+                    <div class="col-10">
+                        <a id="table_{{table['id']}}" type="button" class="focus_action_button">
+                            {{table['name']}}
+                        </a>
+                    </div>
+                </div>
+            </div> 
+            {% endfor %}
+            {% endif %}
+
+            {% if focus_data['transcripts'] %}
+            {% for transcript in focus_data['transcripts'] %}
+            <!-- Transcripts -->
+            <div class="card focus_card {% if transcript['activity'] %}filled_primary{% endif %}">
+                <!-- Focus Element -->
+                <div class="row">
+                    <div class="col-2">
+                        <i class="bi bi-mic-fill"></i>
+                    </div>
+                    <div class="col-10">
+                        <a id="transcript_{{transcript['id']}}" type="button" class="focus_action_button">
+                            {{transcript['name']}}
+                        </a>
+                    </div>
+                </div>
+            </div> 
+            {% endfor %}
+            {% endif %}
+
+            {% if focus_data['websearch'] %}
+            <!-- Web Search -->
+            <div class="card focus_card {% if focus_data['websearch']['activity'] %}filled_primary{% endif %}">
+                <!-- Focus Element -->
+                <div class="row">
+                    <div class="col-2">
+                        <i class="bi bi-globe-americas"></i>
+                    </div>
+                    <div class="col-10">
+                        <a id="websearch_igguzouzgzgu" type="button" class="focus_action_button">
+                            {{ _('Web Search') }}
+                        </a>
+                    </div>
+                </div>
+            </div> 
+            {% endif %}
+
+            {% if focus_data['apiconnections'] %}
+            {% for apiconnection in focus_data['apiconnections'] %}
+            <!-- API Connections -->
+            <div class="card focus_card {% if apiconnection['activity'] %}filled_primary{% endif %}">
+                <!-- Focus Element -->
+                <div class="row">
+                    <div class="col-2">
+                        <i class="bi bi-hdd-network-fill"></i>
+                    </div>
+                    <div class="col-10">
+                        <a id="apiconnection_{{apiconnection['id']}}" type="button" class="focus_action_button">
+                            {{apiconnection['name']}}
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+            {% endif %}
+
+            {% if focus_data['templates'] %}
+            {% for template in focus_data['templates'] %}
+            <!-- Fulfill Documents Templates -->
+            <div class="card focus_card {% if template['activity'] %}filled_primary{% endif %}">
+                <!-- Focus Element -->
+                <div class="row">
+                    <div class="col-2">
+                        <i class="bi bi-pen-fill"></i>
+                    </div>
+                    <div class="col-10">
+                        <a id="template_{{template['id']}}" type="button" class="focus_action_button">
+                            {{template['name']}}
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+            {% endif %}
+
+        {% else %}
+            <div class="card focus_card">
+                <!-- Focus Element -->
+                <div class="row">
+                    <div class="col-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-slash-circle" viewBox="0 0 16 16">
+                            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
+                            <path d="M11.354 4.646a.5.5 0 0 0-.708 0l-6 6a.5.5 0 0 0 .708.708l6-6a.5.5 0 0 0 0-.708"/>
+                        </svg>
+                    </div>
+                    <div class="col-10">
+                        <a type="button" class="focus_action_button">
+                            {{ _('No focus elements available yet.') }}
+                            {{ _('Add a database, file or transcript or activate web search to focus on.') }}
+                        </a>
+                    </div>
+                </div>
+            </div> 
+        {% endif %}
+
+        </div>
+    </div>
+    {% endif %}
+    {% endif %}
+
+    {% if check_5 %}
+    {% if check_5 == 'True' %}
+    <!-- Profiling Offcanvas -->
+    <div class="offcanvas offcanvas-end {% if not (ui_data.white_mode or white_mode) %}text-bg-dark{% endif %}" data-bs-scroll="true"
+        tabindex="-1" id="profiling_offcanvas" aria-labelledby="offcanvasWithBothOptionsLabel">
+        <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="offcanvasWithBothOptionsLabel" style="padding-left: 12px;"></h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body" style="text-align: center;">
+            <p style="color: #A0A0A0; margin-bottom: 25px;">{{ _('Profiling') }}</p>
+            {% if profiling_data %}
+            {% for profile in profiling_data %}
+            <!-- Profiles -->
+            <div class="card focus_card profiling_card {% if profile['activity'] %}filled_primary{% endif %}">
+                <!-- Profile Element -->
+                <div class="row">
+                    <div class="col-2">
+                        <i class="bi bi-person-lines-fill"></i>
+                    </div>
+                    <div class="col-10">
+                        <a id="{{profile['id']}}" type="button" class="profile_action_button">
+                            {{profile['name']}}
+                        </a>
+                    </div>
+                </div>
+            </div> 
+            {% endfor %}
+            {% else %}
+            <div class="card focus_card profiling_card">
+                <!-- Profile Element -->
+                <div class="row">
+                    <div class="col-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-slash-circle" viewBox="0 0 16 16">
+                            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
+                            <path d="M11.354 4.646a.5.5 0 0 0-.708 0l-6 6a.5.5 0 0 0 .708.708l6-6a.5.5 0 0 0 0-.708"/>
+                        </svg>
+                    </div>
+                    <div class="col-10">
+                        <a type="button" class="focus_action_button">
+                            {{ _('No profiles available yet.') }}
+                            {{ _('Configure your profiles under the resource') }} <i>{{ _('Profiling') }}</i>.
+                        </a>
+                    </div>
+                </div>
+            </div> 
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+    {% endif %}
+
+    <!-- Modals -->
+    <div id="modals">
+        <!-- hier Modals einfügen -->
+
+        <!-- Change Keyword Modal -->
+        {% if chatlist %}
+        {% for chat in chatlist %}
+        <div class="modal fade" id="change_keyword_{{chat.thread_id}}" tabindex="1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+              <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">{{ _('Change Chat Keyword') }}</h5>
+                          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <form action="/playground/chat/keyword" method="post">
+                    <div class="modal-body">
+                        <label for="new_keyword" class="form-label">{{ _('New Keyword') }}</label>
+                        <input style="background-color: #212121; color: white; margin-bottom: 5px;" type="text" id="new_keyword_{{chat.thread_id}}" name="keyword" class="form-control keyword-input" value="{{chat.keyword}}" maxlength="50">
+                        <small class="text-muted keyword-char-count mt-2" id="keyword_char_count_{{chat.thread_id}}">{{chat.keyword|length}}/50</small>
+                        <input type="hidden" id="thread_id" name="thread_id" value="{{chat.thread_id}}">
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn dbutton">{{ _('Save') }}</button>
+                    </div>
+                    </form>
+              </div>
+            </div>
+        </div>
+        {% endfor %}
+        {% endif %}
+
+        <!-- Chart Export Modal -->
+        <div class="modal fade" id="chartExportModal" tabindex="1" aria-labelledby="chartExportModal" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">{{ _('Export Charts') }}</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body" id="chartModalContent">
+                        <!-- here modal content select elements -->
+                    </div> 
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-danger" data-bs-dismiss="modal">
+                            <i class="bi bi-trash-fill"></i>
+                        </button>
+                        <button type="button" class="btn cbutton" id="chartExportButton">
+                            <i class="bi bi-download"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Table Export Modal -->
+        <div class="modal fade" id="tablesExportModal" tabindex="1" aria-labelledby="tablesExportModal" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">{{ _('Export Table') }}</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body" id="tablesModalContent">
+                        <!-- here modal content select elements -->
+                    </div> 
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-danger" data-bs-dismiss="modal">
+                            <i class="bi bi-trash-fill"></i>
+                        </button>
+                        <button type="button" class="btn cbutton" id="tablesExportButton">
+                            <i class="bi bi-download"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation"></script>
+</body>
+
+</html>

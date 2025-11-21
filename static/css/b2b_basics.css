@@ -1,0 +1,707 @@
+:root {
+    --primary-color: #f6d8ae;
+    --secondary-color: #2E4057;
+    --dark-grey: #131313;
+    --light-grey: #212121;
+    --very-light-grey: #A0A0A0;
+    --green: #00bf63;
+    --red: #ff3131;
+    --accent: #5271ff;
+}
+
+body {
+
+    /* Colors */
+
+    #primary_color {
+        color: var(--primary-color);
+    }
+
+    #secondary_color {
+        color: var(--secondary-color);
+    }
+
+    #light_grey {
+        color: var(--light-grey);
+    }
+
+    #very_light_grey {
+        color: var(--very-light-grey);
+    }
+
+    #red {
+        color: var(--red);
+    }
+
+    #white {
+        color: white;
+    }
+
+
+    /* General */
+
+    .aktivo {
+        color: var(--primary-color);
+    }
+
+    h {
+        /* Placeholder for spaces in text */
+        color: var(--secondary-color);
+    }
+
+    .readonly,
+    #access_link {
+        border: 1px solid var(--very-light-grey);
+        color: var(--very-light-grey);
+    }
+
+    .select {
+        background-color: var(--dark-grey);
+        background-color: var(--dark-grey);
+        color: var(--very-light-grey);
+        border: none;
+    }
+
+    /* Inputs */
+
+    input[type=file]::file-selector-button {
+        background-color: var(--light-grey);
+        color: var(--very-light-grey);
+    }
+
+    input[type=file] {
+        background: var(--dark-grey);
+        color: var(--very-light-grey);
+        border: 1px solid var(--dark-grey);
+    }
+
+    /* File Upload */
+    /* Drag-and-Drop Zone */
+    .upload-container {
+        text-align: center;
+        padding: 20px;
+    }
+
+    .dropzone {
+        width: 100%;
+        height: 300px;
+        border: 2px dashed var(--primary-color);
+        border-radius: 10px;
+        background-color: var(--secondary-color);
+        color: var(--very-light-grey);
+        display: flex;
+        text-align: center;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
+
+    .dropzone p {
+        width: 50%;
+    }
+
+    .dropzone:hover {
+        background-color: var(--primary-color);
+        color: var(--dark-grey);
+    }
+
+    .dropzone.dragover {
+        background-color: var(--primary-color);
+        border: 2px dashed var(--accent);
+    }
+
+    .file_input_hide {
+        display: none;
+        /* Versteckt das Standard-Input-Feld */
+    }
+
+    /* File List */
+    .file-list {
+        list-style: none;
+        padding-left: 10px;
+        padding-right: 10px;
+        padding-bottom: 5px;
+        margin-top: 10px;
+        max-height: 150px;
+        overflow-y: auto;
+        border-radius: 5px;
+        background: var(--dark-grey);
+    }
+
+    .file-list li {
+        padding: 5px;
+        margin-top: 5px;
+        border-bottom: 1px solid var(--very-light-grey);
+        color: var(--primary-color);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .file-list li:last-child {
+        border-bottom: none;
+    }
+
+    .remove-file {
+        cursor: pointer;
+        color: var(--very-light-grey);
+        font-weight: bold;
+    }
+
+    /* Further Inpurs */
+
+    .input_regular {
+        background: var(--dark-grey);
+        color: var(--very-light-grey);
+        border: 1px solid var(--dark-grey);
+    }
+
+    .input_prompt {
+        background: var(--light-grey);
+        color: white;
+        height: 40px;
+        max-height: 750px;
+        border: 1px solid white;
+    }
+
+    input[type=checkbox] {
+        background-color: var(--dark-grey);
+        margin-left: 10px;
+    }
+
+    .input_b {
+        background-color: var(--very-light-grey);
+        color: white;
+        border: none;
+    }
+
+    /* Cards */
+
+    .b_card {
+        padding: 10px;
+        padding-top: 0px;
+        height: fit-content;
+        margin-bottom: 40px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+    }
+
+    .c_card {
+        padding: 20px;
+        height: fit-content;
+        background-color: var(--light-grey);
+    }
+
+    .c_card .header {
+        color: var(--very-light-grey);
+    }
+
+    .c_card #b_heading b {
+        color: var(--primary-color);
+    }
+
+    .c_card #b_heading p {
+        color: white;
+        text-align: left;
+    }
+
+    .c_card textarea {
+        background-color: var(--dark-grey);
+        color: white;
+        border: none;
+    }
+
+    .d_card {
+        padding: 10px;
+        height: fit-content;
+        background-color: var(--light-grey);
+        border: 1px solid var(--very-light-grey);
+    }
+
+    .d_card .row .col a {
+        color: var(--very-light-grey);
+    }
+
+    .d_card .row .col .aktiv {
+        color: white;
+    }
+
+    .e_card {
+        margin-top: 10px;
+        text-align: right;
+    }
+
+    .f_card {
+        height: fit-content;
+        background-color: var(--dark-grey);
+        padding-left: 0px;
+    }
+
+    .g_card {
+        height: fit-content;
+        width: 250px;
+        border: 1px solid var(--secondary-color);
+        color: var(--very-light-grey);
+        padding: 10px;
+        padding-top: 12px;
+        padding-left: 12px;
+        margin-top: 0px;
+        margin-bottom: 10px;
+    }
+
+    .g_card .row .col-9 {
+        padding-top: 5px;
+    }
+
+    .h_card {
+        height: fit-content;
+        background-color: var(--dark-grey);
+        border: 1px solid var(--secondary-color);
+        color: var(--very-light-grey);
+        padding: 10px;
+        padding-left: 20px;
+        display: flex;
+        vertical-align: middle;
+    }
+
+    #access_card {
+        border: 1px solid var(--secondary-color);
+    }
+
+    .file_card {
+        height: 35px;
+        width: fit-content;
+        background-color: var(--light-grey);
+        border: 1px solid var(--secondary-color);
+        color: var(--very-light-grey);
+        margin: 7.5px;
+        padding-left: 10px;
+        padding-right: 5px;
+        text-align: left;
+    }
+
+    .file_card .row {
+        width: fit-content;
+    }
+
+    .file_card .row .col :first-child {
+        padding-top: 4px;
+    }
+
+    .close_button {
+        color: var(--very-light-grey);
+        margin-top: 0px;
+        margin-bottom: 5px;
+    }
+
+    .list_card {
+        height: fit-content;
+        background-color: var(--dark-grey);
+        border: 1px solid var(--secondary-color);
+        color: var(--very-light-grey);
+        padding: 10px;
+        padding-left: 20px;
+        display: flex;
+    }
+    
+    .list_card .row .col:last-child {
+        display: flex;
+        justify-content: flex-end; /* Sicherstellen, dass der Inhalt nach rechts verschoben wird */
+    }
+
+
+    /* Prompt example card */
+    .prompt_card {
+        height: fit-content;
+        width: fit-content;
+        background-color: var(--dark-grey);
+        border: 1px solid var(--secondary-color);
+        color: var(--very-light-grey);
+        padding: 10px;
+        padding-left: 15px;
+        padding-right: 15px;
+        margin-bottom: 10px;
+    }
+
+    /* Buttons */
+
+    .a_button {
+        background-color: var(--secondary-color);
+        color: white;
+    }
+
+    .cbutton {
+        background-color: var(--primary-color);
+        color: black;
+        -webkit-background-color: var(--primary-color);
+        -webkit-color: black;
+    }
+
+    .dbutton {
+        background-color: var(--secondary-color);
+        color: white;
+        -webkit-background-color: var(--secondary-color);
+        -webkit-color: white;
+    }
+
+    .dbutton_aktiv {
+        background-color: var(--primary-color);
+        color: black;
+        -webkit-background-color: var(--primary-color);
+        -webkit-color: black;
+    }
+
+    .e_button {
+        color: white;
+        border: 1px solid var(--primary-color);
+    }
+
+    .f_button {
+        background-color: var(--dark-grey);
+        color: var(--very-light-grey);
+        border: 1px solid var(--secondary-color);
+    }
+
+    .rbutton {
+        background-color: var(--red);
+        color: white;
+        -webkit-background-color: var(--red);
+        -webkit-color: white;
+    }
+
+    /* Alerts */
+
+    .a_alert {
+        margin-top: 10px;
+        margin-bottom: 0px;
+        background-color: var(--secondary-color);
+        color: white;
+        border: 1px solid var(--light-grey);
+    }
+
+    .a_alert #heading {
+        color: var(--primary-color);
+    }
+
+    .b_alert {
+        background-color: var(--secondary-color);
+        color: white;
+        border: 1px solid var(--very-light-grey);
+    }
+
+    .c_alert {
+        margin-top: 10px;
+        margin-bottom: 0px;
+        padding: 20px;
+        background-color: var(--light-grey);
+        color: white;
+        border: 1px solid var(--primary-color);
+    }
+
+    .success_alert {
+        margin-top: 10px;
+        margin-bottom: 10pxpx;
+        background-color: var(--green);
+        color: white;
+        border: 1px solid var(--light-grey);
+    }
+
+    .failure_alert {
+        margin-top: 10px;
+        margin-bottom: 10px;
+        background-color: var(--red);
+        color: white;
+        border: 1px solid var(--light-grey);
+    }
+
+    .warning_alert {
+        margin-top: 10px;
+        margin-bottom: 0px;
+        background-color: var(--primary-color);
+        color: black;
+        border: 1px solid var(--light-grey);
+    }
+
+    .warning_alert h {
+        color: var(--primary-color);
+    }
+
+    /* Lists */
+    .list-group-item {
+        background-color: var(--dark-grey);
+        color: var(--very-light-grey);
+        border: none;
+    }
+
+    /* Messages */
+    .appendix_message {
+        display: none;
+        height: fit-content;
+        margin-top: -10px;
+        margin-left: 20px;
+        margin-right: 10px;
+        color: white;
+        max-width: fit-content;
+        background-color: black;
+    }
+
+    /* Hovering over chat message */
+    .hovering_message:hover .appendix_message {
+        display: block;
+    }
+
+    /* Icons */
+    .icon {
+        color: var(--very-light-grey);
+    }
+
+    .icon_secure {
+        color: var(--green);
+    }
+
+    .icon_warning {
+        color: var(--red);
+    }
+
+    .icon_margin {
+        margin-left: 10px;
+    }
+
+    /* Circle Icons */
+    .circle-container {
+        display: flex;
+        text-align: right;
+        align-items: end;
+        justify-content: right;
+        background-color: transparent;
+        margin-top: 100px;
+    }
+
+    .circle-icon-2 {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background-color: var(--primary-color);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto;
+        margin-right: 5px;
+        margin-bottom: 2px;
+    }
+
+    .circle-icon-2:hover {
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+    }
+
+    .circle-icon-2 i {
+        font-size: 17.5px;
+        color: var(--dark-grey);
+    }
+
+    /* Groups */
+    .a_group {
+        margin-bottom: 10px;
+        width: 100%;
+    }
+
+    /* Labels */
+    .label {
+        color: white;
+        padding: 10px;
+        border-radius: 5px;
+        font-size: 14px;
+    }
+
+    /* Borders */
+    .bordered_primary {
+        border: 1px solid var(--primary-color);
+    }
+
+    .bordered_grey {
+        border: 1px solid var(--very-light-grey);
+    }
+
+    .bordered_accent_glow {
+        border: 1px solid var(--primary-color);
+        box-shadow: 0 0 10px var(--primary-color);
+    }
+
+    /* Fills */
+    .filled_primary {
+        background-color: var(--primary-color) !important;
+        color: black !important;
+    }
+    .filled_primary .row .col-10 .focus_action_button {
+        color: black !important;
+    }
+
+    /* Accordions */
+    .a_accordion {
+        background-color: var(--dark-grey);
+        border: none;
+        border-radius: 10px;
+    }
+
+    ;
+
+    .a_accordion_item {
+        border: 1px solid var(--secondary-color);
+    }
+
+    .a_accordion_header {
+        background-color: var(--dark-grey);
+        border: none;
+        border-radius: 10px;
+        margin-bottom: -10px
+    }
+
+    ;
+
+    .a_accordion_button {
+        background-color: var(--dark-grey);
+        color: var(--very-light-grey);
+        border: none;
+        margin-bottom: -15px
+    }
+
+    ;
+
+    .a_accordion_body {
+        background-color: var(--dark-grey);
+        border-bottom-left-radius: 10px;
+        border-bottom-right-radius: 10px;
+        border: none
+    }
+
+    ;
+
+    .accordion_textarea {
+        height: 100%;
+        margin-bottom: 10px;
+    }
+
+    /* Example Prompts */
+    .example_prompt {
+        color: var(--very-light-grey);
+        width: 400px;
+    }
+
+    .example_prompt:hover {
+        color: var(--primary-color);
+        /* box-shadow: 0 0 10px var(--primary-color);
+        transition: 1ms; */
+    }
+
+    /* Footer */
+
+    .footer-col h4::before {
+        margin-left: 30px;
+        content: '';
+        position: absolute;
+        left: 0;
+        bottom: -10px;
+        background-color: var(--secondary-color);
+        height: 2px;
+        box-sizing: border-box;
+        width: 75px;
+    }
+
+    /* Preview */
+    .preview_card {
+        border-radius: 10px;
+        border: 1px solid var(--secondary-color);
+        padding-top: 10px;
+    }
+    .voice_preview {
+        max-width: 400px; 
+        text-align: left; 
+        color: var(--very-light-grey);
+    }
+    .voice_heading {
+        margin-bottom: 25px;
+        color: var(--very-light-grey);
+    }
+
+    /* URL */
+    .url_card {
+        margin-bottom: 10px;
+        padding: 10px 20px;
+        height: fit-content;
+        text-align: left;
+        color: var(--very-light-grey);
+        text-decoration: none;
+    }
+
+    .url_card:hover {
+        color: var(--primary-color);
+        background-color: var(--secondary-color);
+        text-decoration: none;
+    }
+
+
+    /* Focus */
+    .focus_card {
+        margin-bottom: 10px;
+        padding: 10px;
+        padding-left: 20px;
+        height: fit-content;
+        text-align: left;
+        color: var(--very-light-grey);
+    }
+
+    .focus_action_button {
+        color: var(--very-light-grey);
+        text-decoration: none;
+    }
+
+    .profile_action_button {
+        color: var(--very-light-grey);
+        text-decoration: none;
+    }
+
+    .bg_primary {
+        background-color: var(--primary-color);
+    }
+
+    /* Connect Database */
+    .connect_database {
+        display: flex;
+        align-items: center; /* Zentriert alle Elemente vertikal */
+        justify-content: center; /* Optional: Zentriert auch horizontal */
+        padding: 10px; /* Etwas Abstand für eine bessere Optik */
+    }
+      
+    .connect_database .row {
+        width: 100%;
+        display: flex;
+        align-items: center; /* Stellt sicher, dass auch die Spalten vertikal zentriert sind */
+    }
+      
+    .connect_database .col-lg-2,
+    .connect_database .col-lg-4,
+    .connect_database .col-lg-6 {
+        display: flex;
+        align-items: center;
+    }
+
+    .cloud_card {
+        height: fit-content;
+        background-color: var(--dark-grey);
+        border: 1px solid var(--secondary-color);
+        color: white;
+        padding: 10px;
+        padding-left: 20px;
+        display: flex;
+    }
+    
+    .cloud_card .row .col:last-child {
+        display: flex;
+        justify-content: flex-end; /* Sicherstellen, dass der Inhalt nach rechts verschoben wird */
+    }
+
+    .text-muted {
+        color: var(--very-light-grey) !important;
+    }
+
+}

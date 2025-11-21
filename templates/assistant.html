@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <!-- Google Analytics Tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-GGJ9LB2060"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-GGJ9LB2060');
+    </script>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ _('Assistant') }}</title>
+    <link rel='shortcut icon' type='image/png' href="{{url_for('static', filename='img/favicon.png')}}"/>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    {% set theme_prefix = 'css/white_theme/' if white_mode else 'css/' %}
+    {% set stylesheets = [
+        'styles.css',
+        'style_path.css',
+        'style_stock_page.css',
+        'style_workbench.css',
+        'b2b_basics.css'
+    ] %}
+    
+    {% for css_file in stylesheets %}
+    <link rel="stylesheet" href="{{ url_for('static', filename=theme_prefix ~ css_file) }}">
+    {% endfor %}
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top custom-navbar">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#"><img class="logo" src="{{url_for('static', filename='img/white_icons/logo.png' if white_mode else 'img/logo.png')}}" alt="Logo"></a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav gap-4 mr-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/dashboard">{{ _('Dashboard') }}</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/playground">{{ _('Chat') }}</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link aktiv" href="#">{{ _('Assistant') }}</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/modules">{{ _('Modules') }}</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/api/page">{{ _('API') }}</a>
+                    </li>
+                    <!-- <li class="nav-item">   
+                        <a class="nav-link" href="/b2b_help">Help</a>
+                    </li> -->
+                </ul>
+                <div class="d-flex flex-column flex-md-row gap-2 abstand">
+                    <a href="/settings" type="button" class="btn dbutton"><i class="bi bi-gear"></i></a>
+                    <a href="/profile" type="button" class="btn dbutton"><i class="bi bi-person"></i></a>
+                    <a href="/auth/logout" type="button" class="btn dbutton"><i class="bi bi-box-arrow-right"></i></a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <section style="margin-bottom: 250px;">
+        <div class="container standard_container" style="margin-top: 100px;">
+            {% if alert %}
+            {% if alert['message'] %}
+            <!-- Success Alert -->
+            <div class="alert alert-dark success_alert" role="alert">
+                <b>{{ _('Success:') }}</b>
+                {{alert['message']}}
+            </div>
+            {% endif %}
+            {% if alert['error'] %}
+            <!-- Failure Alert -->
+            <div class="alert alert-dark failure_alert" role="alert">
+                <b>{{ _('Failure:') }}</b>
+                {{alert['error']}}
+            </div>
+            {% endif %}
+            {% endif %}
+            
+            <h5>{{ _('Model Configuration') }}</h5>
+            <hr>
+            <div class="card b_card">
+            <!-- Info -->
+            <div class="alert alert-dark a_alert" role="alert">
+                <b><i class="bi bi-info-square"></i></b>
+                <h>d</h>
+                {{ _('You have the possibility to customize your model in order to meet your needs perfectly. Click') }} <a type="button" data-bs-toggle="modal" data-bs-target="#info_custom"><b>{{ _('here') }}</b></a> {{ _('for more information.') }}
+            </div>
+            <form action="/assistant/save" method="post">
+                <!-- Use Case -->
+                <div class="card c_card">
+                    <p class="header">{{ _('Use Case') }}</p>
+                    <textarea rows="3" class="form-control" name="use_case">{% if assistant_data['use_case'] %}{{assistant_data['use_case']}}{% endif %}</textarea>
+                    <br>
+                </div>
+                <!-- Safety Instruction -->
+                <div class="card c_card">
+                    <p class="header">{{ _('Safety Instructions') }}</p>
+                    <textarea rows="3" class="form-control" name="safety">{% if assistant_data['safety'] %}{{assistant_data['safety']}}{% endif %}</textarea>
+                    <br>
+                </div>
+                <!-- Additional Information -->
+                <div class="card c_card">
+                    <p class="header">{{ _('Additional Information') }}</p>
+                    <textarea rows="3" class="form-control" name="add_info">{% if assistant_data['add_info'] %}{{assistant_data['add_info']}}{% endif %}</textarea>
+                    <br>
+                </div>
+                <!-- Apply -->
+                <div class="e_card">
+                    <button type="submit" class="btn e_button">{{ _('Save') }}</button>
+                </div>
+            </form>
+            </div>
+
+            <!-- Shared Assistant -->
+            <h5>{{ _('Shared Configuration') }}</h5>
+            <hr>
+            <div class="card b_card">
+                <!-- Shared Connection -->
+                <!-- Info -->
+                <div class="alert alert-dark a_alert" role="alert">
+                    <b><i class="bi bi-info-square"></i></b>
+                    <h>d</h>
+                    {{ _('Simply copy the assistant configuration from one of your colleagues by providing their email and password. Make sure the corresponding user has activated this feature under') }} <i class="bi bi-gear"></i>.
+                </div>
+                <form action="/assistant/shared" method="post">
+                    <div class="card c_card bordered_primary">
+                        <p class="header">{{ _('Shared Configuration') }}</p>
+                        <div class="row">
+                            <div class="col-lg-4 col-md-12 col-sm-12">
+                                <input class="form-control input_b" type="email" name="email" id="email" placeholder="{{ _('Email') }}">
+                            </div>
+                            <div class="col-lg-4 col-md-12 col-sm-12">
+                                <input class="form-control input_b" type="password" name="password" id="password" placeholder="{{ _('Password') }}">
+                            </div>
+                            <div class="col-lg-4 col-md-12 col-sm-12" style="text-align: end;">
+                                <button type="submit" class="btn e_button">{{ _('Copy Configuration') }}</button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            
+        </div>
+    </section>
+
+    <!-- Info Modals -->
+    <!-- Custom -->
+    <div class="modal fade" id="info_custom" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+            <h5 class="modal-title">{{ _('Information') }}</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                {{ _('Beneath, you have the possibility to customize your assistant.') }}<br><br>
+                {{ _('First, describe your use case briefly.') }} <br><br>
+                {{ _('Secondly, add safety instructions limiting the work of the model. This ensures a responsible approach to sensitive data. You can also submit additional information if needed.') }} <br><br>
+
+                {{ _('If you need assistance with this setup, please don\'t hesitate to contact our') }} 
+                <a href="mailto:carl.mueller@olymp.finance?subject=Customization%20Request&body=Please%20describe%20your%20request%20here." style="color: white;"><b>{{ _('support team') }}</b></a>
+                {{ _('in order to develop a personalized solution, which maximizes the usage potential for your application.') }}
+                <!-- Moreover, consider looking in our <a href="{{url_for('download_apollo')}}">documentation</a> to access more information and detailed examples. <br><br> -->
+            </div>
+          </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="row">
+                <div class="footer-col">
+                    <h4>olymp.</h4>
+                    <ul class="no_bullets">
+                        <!-- <li><a href="{{url_for('download')}}">Dokumentation DE</a></li>
+                        <li><a href="{{url_for('download_en')}}">Documentation EN</a></li>
+                        <li><a href="{{url_for('download_apollo')}}">Dokumentation Apollo DE</a></li> -->
+                        <li><a href="{{url_for('terms')}}">{{ _('Terms & Conditions') }}</a></li>
+                        <li><a href="{{url_for('privacy')}}">{{ _('Privacy Policy') }}</a></li>
+                        <!-- <li><a href="#">Impressum</a></li> -->
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>{{ _('Navigation') }}</h4>
+                    <ul class="no_bullets">
+                        <li><a href="/dashboard">{{ _('Dashboard') }}</a></li>
+                        <li><a href="/playground">{{ _('Chat') }}</a></li>
+                        <li><a href="#">{{ _('Assistant') }}</a></li>
+                        <li><a href="/modules">{{ _('Modules') }}</a></li>
+                        <li><a href="/api/page">{{ _('API') }}</a></li>
+                        <!-- <li><a href="/b2b_help">Help</a></li> -->
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>{{ _('Socials') }}</h4>
+                    <div class="social-links abstand_social">
+                        <a href="https://www.linkedin.com/company/olympswitzerland/"><i class="bi bi-linkedin"></i></a>
+                    </div>
+                </div>
+                <div class="footer-col" >
+                    © Olymp AG 2025, <br>
+                    {{ _('All rights reserved.') }}
+                </div>
+            </div>
+        </div>
+    </footer>
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation"></script>
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
+</body>
+</html>

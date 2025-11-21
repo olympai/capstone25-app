@@ -1,0 +1,273 @@
+:root {
+    --primary-color: #F6D8AE;
+    --secondary-color: #2E4057; 
+    --dark-grey: #131313;
+    --light-grey: #212121;
+    --very-light-grey: #A0A0A0;
+    --green: #00bf63;
+    --red: #ff3131;
+}
+
+body {
+.workbench_subcard {
+    margin-left: 10px;
+    margin-right: 10px;
+    margin-top: 10px;
+    height: fit-content;
+    background-color: #212121;
+}
+.chartcard {
+    margin: 10px;
+    height: fit-content;
+    width: fit-content;
+    padding: 10px;
+    background-color: #131313;
+    align-items: center;
+    vertical-align: center;
+    text-align: center;
+}
+.endcard {
+    margin: 10px;
+    height: 150px;
+    width: 150px;
+    background-color: #5771ff;
+    align-items: center;
+    vertical-align: center;
+    text-align: center;
+}
+.linkcard {
+    margin: 10px;
+    height: 150px;
+    width: 150px;
+    background-color: #131313;
+    align-items: center;
+    vertical-align: center;
+    text-align: center;
+}
+.schoner {
+    margin-top: 325px;
+    text-align: center;
+    align-items: center;
+}
+.schoner h4 {
+    margin-top: 25px;
+}
+.schoner img {
+    height: 50px;
+    width: 50px;
+}
+.workbench_sccard {
+    background-color: #131313;
+    margin-top: 2.5px;
+    margin-bottom: 10px;
+    height: fit-content;
+    width: 300px;
+    color: white;
+    padding: 10px;
+    padding-left: 20px;
+    text-align: left;
+}
+.workbench_pluscard {
+    background-color: transparent;
+    margin-top: 2.5px;
+    margin-bottom: 10px;
+    height: fit-content;
+    width: 300px;
+    color: white;
+    padding: 10px;
+    padding-left: 20px;
+    text-align: left;
+    border: none;
+}
+.wb_closer {
+    color: white;
+    background-color: transparent;
+}
+.wb_sugcard {
+    width: 75%;
+    height: fit-content;
+    border: 2px solid #A0A0A0;
+}
+.vertexcard {
+    margin-left: 10px;
+    margin-right: 10px;
+    margin-top: 10px;
+    height: fit-content;
+    background-color: #131313;
+    border: 15px solid #212121;
+    padding: 20px;
+    color: white;
+    text-align: left;
+    align-items: start;
+}
+.vertexcard h2 {
+    text-align: left;
+    font-size: 1.5em;
+    margin-top: 5px;
+    color: var(--primary-color);
+}
+.workbench_linkcard {
+    margin-left: 10px;
+    margin-right: 10px;
+    margin-top: 10px;
+    height: fit-content;
+    width: 100%;
+    background-color: #212121;
+    color: white;
+    padding: 20px;
+}
+.workbench_linkcard img {
+    border: 1px solid #a0a0a0;
+    width: 100%;
+}
+
+.workbench_linkcard h5 {
+    color: white;
+    text-align: left;
+}
+.workbench_linkcard p {
+    margin-top: 25px;
+    color: #a0a0a0;
+}
+.workbench_linkcard .card {
+    color: #a0a0a0;
+    margin-top: 10px;
+    padding: 5%;
+    height: fit-content;
+    margin-bottom: 25px;
+}
+.linkbutton {
+    border: 1px solid var(--primary-color);
+    background-color: #131313;
+    color: white;
+}
+.sentimentcard {
+    color: white;
+    margin-top: 25px;
+    height: 50px;
+    width: fit-content;
+}
+.openai_grey {
+    color: #a0a0a0;
+}
+
+.mes {
+    margin-top: 10px;
+}
+.message {
+    height: fit-content;
+    margin-left: 10px;
+    margin-right: 10px;
+    color: white;
+}
+.chat_message {
+    height: fit-content;
+    margin-left: 10px;
+    margin-right: 10px;
+    color: white;
+    max-width: fit-content;
+}
+.appendix_message {
+    display: none;
+    height: fit-content;
+    margin-left: 20px;
+    margin-right: 10px;
+    color: white;
+    max-width: fit-content;
+    background-color: black;
+}
+/* Hovering over chat message */
+.hovering_message:hover .appendix_message {
+    display: block;
+}
+.user_message {
+    background-color: #131313;
+    color: white;
+    text-align: left;
+}
+.col-max-7 {
+    max-width: 75%;
+}
+.button_details {
+    background: #212121;
+    color: white;
+    border: 1px solid var(--primary-color);  
+}
+.stock_card {
+    height: 35px;
+    width: fit-content;
+    background-color: #212121;
+    color: white;
+    padding-top: 4px;
+    padding-left: 10px;
+    text-align: left;
+  }
+a {
+    text-decoration: none;
+}
+.report_card {
+ background-color: #131313;
+ padding: 25px;
+ height: fit-content;
+}
+.report-table th {
+    background-color: #f2f2f2;
+}
+.report-table {
+    border-collapse: collapse;
+    color: white;
+    width: 100%;
+}
+.report-table th, .report-table td {
+    border: 1px solid #707070;
+    padding: 10px;
+    text-align: right;
+}
+.report-table th, .report-table td:first-child{
+    text-align: left;
+}
+.report-table th {
+    background-color: #212121;
+}
+.report-table  tr:nth-child(even) {
+    background-color: #191919;
+}
+#reportheading1 {
+    font-weight: bold;
+    color: var(--primary-color);
+}
+#reportheading2 {
+    color: var(--primary-color);
+}
+#reportsection {
+    margin-top: 25px;
+    margin-bottom: 50px;
+}
+#reportyoy {
+    margin-left: 10px;
+    color: #00bf63;
+    font-weight: lighter;
+}
+.button_dots {
+    background-color: #212121;
+    color: white;
+    width: 100%;
+}
+
+/* Appendix */
+.appendix_button {
+    color: var(--very-light-grey);
+}
+.appendix_button:hover {
+    color: var(--primary-color);
+}
+
+/* Recommendations */
+.rezcard {
+    height: fit-content;
+    background-color: transparent;
+    border: 1px solid var(--secondary-color);
+    padding: 20px;
+    text-align: left;
+} 
+}

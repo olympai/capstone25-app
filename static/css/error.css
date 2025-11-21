@@ -1,0 +1,38 @@
+.error {
+    text-align: center;
+    margin: 0 auto;
+    color: white;
+}
+
+span {
+    background: linear-gradient(to right, var(--primary-color), var(--accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.error img {
+    display: block;
+    margin: 0 auto 50px;
+}
+
+.error h1 {
+    font-size: 28px;
+    font-weight: bold;
+    margin-bottom: 15px;
+}
+
+.error p {
+    font-size: 18px;
+    line-height: 1.6;
+    margin-bottom: 25px;
+}
+
+section {
+    margin-top: 150px;
+    margin-bottom: 150px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    padding: 20px;
+}

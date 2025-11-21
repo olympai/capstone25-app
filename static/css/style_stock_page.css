@@ -1,0 +1,185 @@
+:root {
+    --primary-color: #F6D8AE;
+    --secondary-color: #2E4057; 
+    --dark-grey: #131313;
+    --light-grey: #212121;
+    --very-light-grey: #A0A0A0;
+    --green: #00bf63;
+    --red: #ff3131;
+}
+
+body {
+
+.card {
+    margin-top: 10px;
+    background-color: #131313;
+    height: 500px;
+    }    
+.subcard {
+    margin-left: 10px;
+    margin-right: 10px;
+    margin-top: 10px;
+    height: fit-content;
+    background-color: #212121;
+    align-items: center;
+    vertical-align: center;
+    text-align: center;
+}
+.subcard1 {
+    margin: 10px;
+    background-color: #212121;
+    align-items: center;
+    vertical-align: center;
+    text-align: center;
+    padding: 20px; 
+    height: fit-content;
+}
+.valcard {
+    margin-top: 15px;
+    margin-bottom: 15px;
+    height: 50px;
+    width: 250px;
+    text-align: center;
+    padding-top: 7.5px;
+}
+.valcard h3 {
+    color: white;
+}
+.screencard {
+    margin-top: 2.5px;
+    margin-bottom: 15px;
+    height: fit-content;
+    width: 300px;
+    color: white;
+    padding: 15px;
+    padding-bottom: 5px;
+    text-align: left;
+}
+.aicard {
+    margin: 10px;
+    margin-top: 15px;
+    height: fit-content;
+    width: 96%;
+    color: white;
+    padding: 10px;
+    text-align: left;
+}
+.aitext {
+    margin-top: 32.5px;
+    height: fit-content; 
+    margin-bottom: 10px; 
+    text-align: justify; 
+    padding-top: 10px
+}
+.aitext p {
+    margin-left: 20px;
+    margin-right: 20px;
+    color: white;
+}
+.textcard {
+    margin-top: 25px;
+    padding: 10px;
+    color: white;
+    text-align: justify;
+    height: fit-content;
+}
+.textcard p {
+    margin-left: 10px;
+    margin-right: 10px;
+    margin-bottom: 5px;
+}
+
+.ai-table {
+    border-collapse: collapse;
+    margin: 10px;
+    color: white;
+    height: 50px;
+    width: 96%;
+}
+.ai-table th, .ai-table td {
+    border: 1px solid #707070;
+    padding: 10px;
+    text-align: left;
+}
+.simple-table th {
+    background-color: #f2f2f2;
+}
+.ai-table th:first-child,
+.ai-table td:first-child {
+    width: 75%; /* Breite der ersten Spalte */
+}
+.ai-table th:nth-child(2),
+.ai-table td:nth-child(2) {
+    text-align: right; 
+}
+.simple-table {
+    border-collapse: collapse;
+    margin: 10px;
+    color: white;
+    height: 90%;
+    width: 92.5%;
+}
+.simple-table th, .simple-table td {
+    border: 1px solid #707070;
+    padding: 10px;
+    text-align: left;
+}
+.simple-table th:first-child,
+.simple-table td:first-child {
+    width: 20%; /* Breite der ersten Spalte */
+}
+.simple-table th:nth-child(2),
+.simple-table td:nth-child(2) {
+    text-align: right; 
+}
+
+.val-table th {
+    background-color: #f2f2f2;
+}
+.val-table {
+    border-collapse: collapse;
+    margin: 10px;
+    color: white;
+    height: 90%;
+    width: 100%;
+}
+.val-table th, .val-table td {
+    border: 1px solid #707070;
+    padding: 10px;
+    text-align: left;
+}
+.val-table th {
+    background-color: #131313;
+}
+.val-table th:first-child,
+.val-table td:first-child {
+    background-color: #131313;
+}
+.val-table td:nth-child(2), .val-table td:nth-child(3), .val-table td:nth-child(4), .val-table td:nth-child(5), .val-table td:nth-child(6), .val-table td:nth-child(7), .val-table td:nth-child(8) {
+    text-align: right; 
+}
+.val-table tr:first-child td {
+    background-color: #131313;
+    text-align: left;
+}
+.val-table tr:first-child td:nth-last-child(2) {
+    border-top: 2px solid var(--primary-color);
+    border-right: 2px solid var(--primary-color);
+    border-left: 2px solid var(--primary-color);
+}
+.val-table th:nth-last-child(3) {
+    background-color: #161616;
+}
+.val-table td:nth-last-child(3) {
+    background-color: #404040;
+}
+.val-table td:nth-last-child(2) {
+    border-right: 2px solid var(--primary-color);
+    border-left: 2px solid var(--primary-color);
+}
+#fd {
+    border-right: 2px solid var(--primary-color);
+    border-left: 2px solid var(--primary-color);
+    border-bottom: 2px solid var(--primary-color);
+}
+}

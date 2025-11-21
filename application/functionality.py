@@ -1,0 +1,1 @@
+# alle wichtigen Funktionsbestandteile unserer App
