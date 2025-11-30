@@ -17,18 +17,16 @@ def start_workflow(file_name: str = "", allowed_sources: list = []):
     if not success_2:
         alert = {"error": reasoning_2}
         return alert
-    
+
     # conclusion
-    final_success, final_result, final_prediction = summary(text_1=reasoning_1, 
-                                                            text_2=reasoning_2, 
-                                                            score_1=prediction_1, 
+    final_success, final_result, final_prediction = summary(text_1=reasoning_1,
+                                                            text_2=reasoning_2,
+                                                            score_1=prediction_1,
                                                             score_2=prediction_2
                                                             )
     if not final_success:
         alert = {"error": final_result}
         return alert
-    
-    print(final_prediction, final_result, (prediction_1, reasoning_1), (prediction_2, reasoning_2, sources))
 
     return final_prediction, final_result, (prediction_1, reasoning_1), (prediction_2, reasoning_2, sources)
 

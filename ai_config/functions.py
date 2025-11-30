@@ -102,22 +102,22 @@ def get_prediction(client: anthropic.Anthropic = client, model: str = model, ins
         print(f"Error in prediction for {pdf_filename}: {e}")
         return False, False, f"Error: {str(e)}", ""
     
-def do_websearch(model: str = model, missing: str = "", allowed_sources: list = []):
+def do_websearch(client: anthropic.Anthropic = client, model: str = model, missing: str = "", allowed_sources: list = []):
     try:
-        # Define the tool for structured output
-        websearch_evaluation_tool = {
-            "name": "websearch_evaluation",
-            "description": "Provides a structured evaluation based on web search findings",
+        # Simple evaluation tool
+        evaluation_tool = {
+            "name": "evaluation",
+            "description": "Provides prediction and reasoning based on web research",
             "input_schema": {
                 "type": "object",
                 "properties": {
                     "prediction": {
                         "type": "boolean",
-                        "description": "True if the startup is likely to survive and succeed in the market, False otherwise"
+                        "description": "True if the startup is likely to survive and succeed, False otherwise"
                     },
                     "reasoning": {
                         "type": "string",
-                        "description": "Brief justification in 2-3 sentences explaining the key factors that led to the decision"
+                        "description": "Brief justification in 2-3 sentences explaining the key factors"
                     }
                 },
                 "required": ["prediction", "reasoning"]
@@ -126,14 +126,14 @@ def do_websearch(model: str = model, missing: str = "", allowed_sources: list = 
 
         response = client.messages.create(
             model=model,
-            max_tokens=1024,
+            max_tokens=4096,
             messages=[
                 {
                     "role": "user",
                     "content": f"""You are a VC-research expert. Find out additional information based on these instructions: {missing}.
                     Focus on these sources: {allowed_sources}
 
-                    After gathering information, provide your evaluation using the websearch_evaluation tool.
+                    After your research, use the evaluation tool to provide your prediction and reasoning.
                     """
                 }
             ],
@@ -142,34 +142,60 @@ def do_websearch(model: str = model, missing: str = "", allowed_sources: list = 
                     "type": "web_search_20250305",
                     "name": "web_search"
                 },
-                websearch_evaluation_tool
+                evaluation_tool
             ]
         )
-        print(response)
 
-        # Extract structured output and sources
+        # Extract prediction, reasoning, and sources
         prediction = False
         reasoning = "No reasoning provided"
         sources = []
 
         for content in response.content:
-            if content.type == "tool_use" and content.name == "websearch_evaluation":
+            if content.type == "tool_use" and content.name == "evaluation":
                 result = content.input
                 prediction = result.get("prediction", False)
                 reasoning = result.get("reasoning", "No reasoning provided")
-            elif content.type == "tool_result":
-                # Extract web search sources if available
-                if hasattr(content, 'content'):
-                    sources.append(content.content)
+            elif content.type == "text":
+                # Extract sources from citations if available
+                if hasattr(content, 'citations') and content.citations:
+                    for citation in content.citations:
+                        if hasattr(citation, 'url') and citation.url:
+                            source_info = {
+                                'url': citation.url,
+                                'title': getattr(citation, 'title', citation.url)
+                            }
+                            sources.append(source_info)
+            elif hasattr(content, 'type') and 'web_search' in str(content.type):
+                # Extract from web_search_tool_result
+                if hasattr(content, 'content') and isinstance(content.content, list):
+                    for item in content.content:
+                        if hasattr(item, 'url'):
+                            source_info = {
+                                'url': item.url,
+                                'title': getattr(item, 'title', item.url)
+                            }
+                            sources.append(source_info)
 
-        print(f"Prediction: {prediction}")
-        print(f"Reasoning: {reasoning}")
+        # Remove duplicate URLs
+        seen_urls = set()
+        unique_sources = []
+        for source in sources:
+            if source['url'] not in seen_urls:
+                seen_urls.add(source['url'])
+                unique_sources.append(source)
 
-        return True, prediction, reasoning, sources
+        print(f"Prediction WS: {prediction}")
+        print(f"Reasoning WS: {reasoning}")
+        print(f"Sources: {unique_sources}")
+
+        return True, prediction, reasoning, unique_sources
 
     except Exception as e:
         print(f"Error: {e}")
-        return False, False, f"Error: {str(e)}", ""
+        import traceback
+        traceback.print_exc()
+        return False, False, f"Error: {str(e)}", []
     
 # summarize results
 def summary(model: str = model, text_1: str = "", text_2: str = "", score_1: bool = False, score_2: bool = False):
@@ -184,22 +210,6 @@ def summary(model: str = model, text_1: str = "", text_2: str = "", score_1: boo
         else:
             final_prediction = "yellow"
 
-        # Define the tool for structured output
-        summary_tool = {
-            "name": "generate_summary",
-            "description": "Generates a comprehensive summary combining pitch deck analysis and web search findings",
-            "input_schema": {
-                "type": "object",
-                "properties": {
-                    "summary": {
-                        "type": "string",
-                        "description": "A comprehensive summary that synthesizes insights from both the pitch deck analysis and web search findings"
-                    }
-                },
-                "required": ["summary"]
-            }
-        }
-
         # summary
         message = client.messages.create(
             model=model,
@@ -211,23 +221,16 @@ def summary(model: str = model, text_1: str = "", text_2: str = "", score_1: boo
                     1. Text (from a pitchdeck analyzer): {text_1}
                     2. Text (from Web Search assistant): {text_2}
 
-                    Use the generate_summary tool to provide your analysis.
+                    Provide a well-structured analysis that synthesizes insights from both sources.
                     """
                 }
-            ],
-            tools=[summary_tool],
-            tool_choice={"type": "tool", "name": "generate_summary"}
+            ]
         )
 
-        # Extract structured output from tool use
-        for content in message.content:
-            if content.type == "tool_use" and content.name == "generate_summary":
-                result = content.input.get("summary", "No summary provided")
-                print(f"Summary: {result}")
-                return True, result, final_prediction
-
-        # Fallback if no tool use found
-        return False, "No structured output received", final_prediction
+        # Extract text from response
+        result = message.content[0].text.strip()
+        print(f"Summary: {result}")
+        return True, result, final_prediction
 
     except Exception as e:
         print(f"Error: {e}")
