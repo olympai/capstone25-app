@@ -7,14 +7,14 @@ from ai_config.config import client, model
 def get_prediction(client: anthropic.Anthropic = client, model: str = model, instruction: str = "", pdf_filename: str = "") -> Tuple[bool, str]:
     """
     Get survival prediction and reasoning for a pitch deck PDF using Claude with base64 encoding.
-    
+
     Args:
         client: Anthropic client
         model: Model name to use (e.g., "claude-sonnet-4-5")
         instruction: System instruction for evaluation
         pdf_path: Path to the PDF file
         pdf_filename: Name of the PDF file for error reporting
-    
+
     Returns:
         Tuple[bool, str]: (prediction, reasoning) - True if startup survives, False if it fails, and reasoning text
     """
@@ -22,8 +22,36 @@ def get_prediction(client: anthropic.Anthropic = client, model: str = model, ins
         # Load and encode the PDF as base64
         with open("tmp/" + pdf_filename, 'rb') as f:
             pdf_data = base64.standard_b64encode(f.read()).decode("utf-8")
-        
-        # Create message with base64-encoded PDF
+
+        # Define the tool for structured output
+        evaluation_tool = {
+            "name": "pitch_deck_evaluation",
+            "description": "Provides a structured evaluation of a startup pitch deck with prediction, reasoning, and missing information",
+            "input_schema": {
+                "type": "object",
+                "properties": {
+                    "pitch": {
+                        "type": "string",
+                        "description": "Short description of the startups idea, market and founders (if available)."
+                    },
+                    "prediction": {
+                        "type": "boolean",
+                        "description": "True if the startup is likely to survive and succeed, False otherwise"
+                    },
+                    "reasoning": {
+                        "type": "string",
+                        "description": "Brief justification in 2-3 sentences explaining the key factors that led to the decision"
+                    },
+                    "missing": {
+                        "type": "string",
+                        "description": "Information that is missing from the pitch deck that would be helpful for a more accurate evaluation"
+                    }
+                },
+                "required": ["pitch", "prediction", "reasoning", "missing"]
+            }
+        }
+
+        # Create message with base64-encoded PDF and tool
         message = client.messages.create(
             model=model,
             max_tokens=2048,
@@ -42,56 +70,60 @@ def get_prediction(client: anthropic.Anthropic = client, model: str = model, ins
                         },
                         {
                             "type": "text",
-                            "text": "Please evaluate this pitch deck and provide your prediction and reasoning in the specified format."
+                            "text": "Please evaluate this pitch deck and provide your prediction and reasoning using the pitch_deck_evaluation tool."
                         }
                     ]
                 }
             ],
+            tools=[evaluation_tool],
+            tool_choice={"type": "tool", "name": "pitch_deck_evaluation"}
         )
-        
-        # Extract text from response
-        result = message.content[0].text.strip()
-        print(result)
-        
-        # Parse response to extract prediction and reasoning
-        prediction = False
-        reasoning = "No reasoning provided"
-        missing = "Nothing missing"
-        
-        # Extract prediction
-        if 'PREDICTION:' in result:
-            pred_line = result.split('PREDICTION:')[1].split('\n')[0].strip().lower()
-            if 'true' in pred_line:
-                prediction = True
-            elif 'false' in pred_line:
-                prediction = False
-        else:
-            # Fallback to old parsing
-            if 'true' in result.lower():
-                prediction = True
-            elif 'false' in result.lower():
-                prediction = False
-        
-        # Extract reasoning
-        if 'REASONING:' in result:
-            reasoning = result.split('REASONING:')[1].strip()
-            # Remove any trailing prediction markers
-            reasoning = reasoning.split('PREDICTION:')[0].strip()
 
-        # Extract What Missing
-        if 'MISSING:' in result:
-            missing = result.split('MISSING:')[1].strip()
-            # Remove any trailing prediction markers
-            missing = missing.split('REASONING:')[0].strip()
-        
-        return True, prediction, reasoning, missing
-            
+        # Extract structured output from tool use
+        for content in message.content:
+            if content.type == "tool_use" and content.name == "pitch_deck_evaluation":
+                result = content.input
+                prediction = result.get("prediction", False)
+                reasoning = result.get("reasoning", "No reasoning provided")
+                pitch = result.get("pitch", "")
+                missing = pitch + result.get("missing", "")
+                missing += " Research information regarding market and founders"
+
+                print(f"Prediction: {prediction}")
+                print(f"Reasoning: {reasoning}")
+                print(f"Missing: {missing}")
+
+                return True, prediction, reasoning, missing
+
+        # Fallback if no tool use found
+        return False, False, "No structured output received", ""
+
     except Exception as e:
         print(f"Error in prediction for {pdf_filename}: {e}")
         return False, False, f"Error: {str(e)}", ""
     
 def do_websearch(model: str = model, missing: str = "", allowed_sources: list = []):
     try:
+        # Define the tool for structured output
+        websearch_evaluation_tool = {
+            "name": "websearch_evaluation",
+            "description": "Provides a structured evaluation based on web search findings",
+            "input_schema": {
+                "type": "object",
+                "properties": {
+                    "prediction": {
+                        "type": "boolean",
+                        "description": "True if the startup is likely to survive and succeed in the market, False otherwise"
+                    },
+                    "reasoning": {
+                        "type": "string",
+                        "description": "Brief justification in 2-3 sentences explaining the key factors that led to the decision"
+                    }
+                },
+                "required": ["prediction", "reasoning"]
+            }
+        }
+
         response = client.messages.create(
             model=model,
             max_tokens=1024,
@@ -100,47 +132,41 @@ def do_websearch(model: str = model, missing: str = "", allowed_sources: list = 
                     "role": "user",
                     "content": f"""You are a VC-research expert. Find out additional information based on these instructions: {missing}.
                     Focus on these sources: {allowed_sources}
-                    
-                    Output format:
-                    PREDICTION: [Return "true", if the startup is likely to survive and succeed in the market, else "false"]
-                    REASONING: [Provide a brief justification in 2–3 sentences explaining the key factors that led to your decision]
+
+                    After gathering information, provide your evaluation using the websearch_evaluation tool.
                     """
                 }
             ],
-            tools=[{
-                "type": "web_search_20250305",
-                "name": "web_search"
-            }]
+            tools=[
+                {
+                    "type": "web_search_20250305",
+                    "name": "web_search"
+                },
+                websearch_evaluation_tool
+            ]
         )
         print(response)
 
-        # Analyze response
-        text = response["content"][3]["text"].strip()
-        sources = response["content"][2]["content"]
+        # Extract structured output and sources
+        prediction = False
+        reasoning = "No reasoning provided"
+        sources = []
 
-        # Search in text
-        # Extract prediction
-        if 'PREDICTION:' in text:
-            pred_line = text.split('PREDICTION:')[1].split('\n')[0].strip().lower()
-            if 'true' in pred_line:
-                prediction = True
-            elif 'false' in pred_line:
-                prediction = False
-        else:
-            # Fallback to old parsing
-            if 'true' in text.lower():
-                prediction = True
-            elif 'false' in text.lower():
-                prediction = False
-        
-        # Extract reasoning
-        if 'REASONING:' in text:
-            reasoning = text.split('REASONING:')[1].strip()
-            # Remove any trailing prediction markers
-            reasoning = reasoning.split('PREDICTION:')[0].strip()
+        for content in response.content:
+            if content.type == "tool_use" and content.name == "websearch_evaluation":
+                result = content.input
+                prediction = result.get("prediction", False)
+                reasoning = result.get("reasoning", "No reasoning provided")
+            elif content.type == "tool_result":
+                # Extract web search sources if available
+                if hasattr(content, 'content'):
+                    sources.append(content.content)
+
+        print(f"Prediction: {prediction}")
+        print(f"Reasoning: {reasoning}")
 
         return True, prediction, reasoning, sources
-    
+
     except Exception as e:
         print(f"Error: {e}")
         return False, False, f"Error: {str(e)}", ""
@@ -158,6 +184,22 @@ def summary(model: str = model, text_1: str = "", text_2: str = "", score_1: boo
         else:
             final_prediction = "yellow"
 
+        # Define the tool for structured output
+        summary_tool = {
+            "name": "generate_summary",
+            "description": "Generates a comprehensive summary combining pitch deck analysis and web search findings",
+            "input_schema": {
+                "type": "object",
+                "properties": {
+                    "summary": {
+                        "type": "string",
+                        "description": "A comprehensive summary that synthesizes insights from both the pitch deck analysis and web search findings"
+                    }
+                },
+                "required": ["summary"]
+            }
+        }
+
         # summary
         message = client.messages.create(
             model=model,
@@ -165,22 +207,28 @@ def summary(model: str = model, text_1: str = "", text_2: str = "", score_1: boo
             messages=[
                 {
                     "role": "user",
-                    "content": [
-                        {
-                            "type": "text",
-                            "text": f"""You are a VC-analyst. You write a comprehensive summary based on the followeing to texts. 
-                            1. Text (from a pitchdeck analyzer): {text_1}
-                            2. Text (from Web Search assistant) {text_2}
-                            """
-                        }
-                    ]
+                    "content": f"""You are a VC-analyst. Write a comprehensive summary based on the following two texts:
+                    1. Text (from a pitchdeck analyzer): {text_1}
+                    2. Text (from Web Search assistant): {text_2}
+
+                    Use the generate_summary tool to provide your analysis.
+                    """
                 }
             ],
+            tools=[summary_tool],
+            tool_choice={"type": "tool", "name": "generate_summary"}
         )
-            
-        # Extract text from response
-        result = message.content[0].text.strip()
-        return True, result, final_prediction
+
+        # Extract structured output from tool use
+        for content in message.content:
+            if content.type == "tool_use" and content.name == "generate_summary":
+                result = content.input.get("summary", "No summary provided")
+                print(f"Summary: {result}")
+                return True, result, final_prediction
+
+        # Fallback if no tool use found
+        return False, "No structured output received", final_prediction
+
     except Exception as e:
         print(f"Error: {e}")
         return False, f"Error: {e}", "red"

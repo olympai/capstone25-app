@@ -21,8 +21,8 @@ def start_workflow(file_name: str = "", allowed_sources: list = []):
     # conclusion
     final_success, final_result, final_prediction = summary(text_1=reasoning_1, 
                                                             text_2=reasoning_2, 
-                                                            prediction_1=prediction_1, 
-                                                            prediction_2=prediction_2
+                                                            score_1=prediction_1, 
+                                                            score_2=prediction_2
                                                             )
     if not final_success:
         alert = {"error": final_result}
