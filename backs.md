@@ -51,7 +51,7 @@ Tippe: Views: Reset View Locations
 
 Einzelne Scripts testen:
   set -a && source .env && set +a && python -m word_addin.call_api -> hier script als modul nennen
-  python -m word_addin.word_addin_auth
+  python3 -m word_addin.word_addin_auth
 
 
 pybael:
