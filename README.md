@@ -1,5 +1,7 @@
 # VC Pitch Deck Analyzer
 
+## TO START RUN: ./run.sh
+
 An AI-powered Streamlit application for analyzing startup pitch decks using Claude AI. The application performs comprehensive evaluations combining pitch deck analysis with web research to provide investment insights.
 
 ## Features
@@ -162,14 +164,6 @@ You can customize these in the sidebar.
 - Check Python version: `python --version` (should be 3.9+)
 - Try clearing Streamlit cache: `streamlit cache clear`
 
-## License
-
-[Add your license here]
-
-## Contributing
-
-[Add contribution guidelines here]
-
 ## Support
 
-For issues and questions, please open an issue on GitHub or contact [your contact info].
+For issues and questions, please open an issue on GitHub.
