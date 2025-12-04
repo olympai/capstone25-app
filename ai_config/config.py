@@ -1,5 +1,9 @@
 import os
 from anthropic import AnthropicFoundry
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 # Anthropic Configuration
 # Set your API key here or use environment variable ANTHROPIC_API_KEY
