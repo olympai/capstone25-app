@@ -235,3 +235,83 @@ def summary(model: str = model, text_1: str = "", text_2: str = "", score_1: boo
     except Exception as e:
         print(f"Error: {e}")
         return False, f"Error: {e}", "red"
+
+def generate_email(model: str = model, final_prediction: str = "red", pitch_deck_reasoning: str = "", web_research_reasoning: str = "", summary_text: str = "", startup_name: str = ""):
+    """
+    Generate personalized email response to founders based on analysis results.
+
+    Args:
+        model: Model name to use
+        final_prediction: "green", "yellow", or "red"
+        pitch_deck_reasoning: Reasoning from pitch deck analysis
+        web_research_reasoning: Reasoning from web research
+        summary_text: Executive summary
+        startup_name: Name of the startup
+
+    Returns:
+        Tuple[bool, str, str]: (success, subject, body) - Email subject and body
+    """
+    try:
+        # Determine email type
+        email_type = "invitation" if final_prediction == "green" else "rejection"
+
+        prompt = f"""You are a professional VC partner writing an email to startup founders.
+
+Based on the following analysis of {startup_name if startup_name else "the startup"}:
+
+Executive Summary: {summary_text}
+
+Pitch Deck Analysis: {pitch_deck_reasoning}
+
+Web Research Findings: {web_research_reasoning}
+
+Write a {"warm invitation email for a next meeting to discuss investment opportunities" if email_type == "invitation" else "polite rejection email"}.
+
+The email should:
+- Be professional but personable
+- {"Highlight the specific strengths that impressed us and propose next steps for a meeting" if email_type == "invitation" else "Be respectful and constructive, briefly mentioning that we're unable to proceed at this time"}
+- Be concise (3-4 paragraphs maximum)
+- {"End with proposed meeting times or a request to schedule a call" if email_type == "invitation" else "Wish them well in their future endeavors"}
+- Sign off as "The Investment Team"
+
+Format the response as:
+SUBJECT: [email subject line]
+BODY: [email body]
+"""
+
+        message = client.messages.create(
+            model=model,
+            max_tokens=1024,
+            messages=[
+                {
+                    "role": "user",
+                    "content": prompt
+                }
+            ]
+        )
+
+        # Extract text from response
+        result = message.content[0].text.strip()
+
+        # Parse subject and body
+        subject = ""
+        body = ""
+
+        if "SUBJECT:" in result and "BODY:" in result:
+            parts = result.split("BODY:", 1)
+            subject = parts[0].replace("SUBJECT:", "").strip()
+            body = parts[1].strip()
+        else:
+            # Fallback if format not followed
+            lines = result.split("\n", 1)
+            subject = lines[0].strip()
+            body = lines[1].strip() if len(lines) > 1 else result
+
+        print(f"Email Subject: {subject}")
+        print(f"Email Body: {body}")
+
+        return True, subject, body
+
+    except Exception as e:
+        print(f"Error generating email: {e}")
+        return False, "Follow-up", f"Error generating email: {str(e)}"

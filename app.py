@@ -1,8 +1,9 @@
 import streamlit as st
 import os
 from pathlib import Path
-from ai_config.functions import get_prediction, do_websearch, summary
+from ai_config.functions import get_prediction, do_websearch, summary, generate_email
 from ai_config.config import client, model, instruction
+import urllib.parse
 
 # Page configuration
 st.set_page_config(
@@ -602,6 +603,7 @@ if st.session_state.page == 'config':
                     st.session_state.workflow_completed = False
                     st.session_state.results = None
                     st.session_state.chat_history = []
+                    st.session_state.generated_email = None
                     st.rerun()
             else:
                 st.button("🚀 Run Analysis", type="primary", use_container_width=True, disabled=True)
@@ -773,6 +775,86 @@ elif st.session_state.page == 'results':
                         st.markdown(f"{i}. [{source['title']}]({source['url']})")
                     else:
                         st.markdown(f"{i}. {source}")
+
+        # Email Generation Section
+        st.markdown("---")
+        st.markdown('<div class="sub-header">✉️ Generate Founder Response</div>', unsafe_allow_html=True)
+
+        # Initialize email state if not exists
+        if 'generated_email' not in st.session_state:
+            st.session_state.generated_email = None
+
+        col_email1, col_email2, col_email3 = st.columns([1, 2, 1])
+        with col_email2:
+            # Determine email type
+            email_type = "invitation" if results['final_prediction'] == 'green' else "rejection"
+            email_icon = "✅" if email_type == "invitation" else "📧"
+
+            st.info(f"{email_icon} Email Type: **{email_type.title()}** - Based on {'positive' if email_type == 'invitation' else 'mixed or negative'} analysis results")
+
+            if st.button("📝 Generate Email", type="primary", use_container_width=True):
+                with st.spinner("Generating personalized email..."):
+                    # Extract startup name from filename (remove .pdf extension)
+                    startup_name = results['filename'].replace('.pdf', '').replace('_', ' ').replace('-', ' ').title()
+
+                    success, subject, body = generate_email(
+                        model=model,
+                        final_prediction=results['final_prediction'],
+                        pitch_deck_reasoning=results['pitch_deck']['reasoning'],
+                        web_research_reasoning=results['web_research']['reasoning'],
+                        summary_text=results['summary'],
+                        startup_name=startup_name
+                    )
+
+                    if success:
+                        st.session_state.generated_email = {
+                            'subject': subject,
+                            'body': body,
+                            'type': email_type
+                        }
+                        st.success("✅ Email generated successfully!")
+                        st.rerun()
+
+        # Display generated email if available
+        if st.session_state.generated_email:
+            st.markdown("### 📧 Generated Email")
+            email_data = st.session_state.generated_email
+
+            with st.container():
+                st.markdown(f"**Subject:** {email_data['subject']}")
+                st.markdown("**Body:**")
+                st.markdown(email_data['body'])
+                st.markdown('</div>', unsafe_allow_html=True)
+
+            # Create mailto link
+            col_mail1, col_mail2, col_mail3 = st.columns([1, 2, 1])
+            with col_mail2:
+                # URL encode the subject and body
+                encoded_subject = urllib.parse.quote(email_data['subject'])
+                encoded_body = urllib.parse.quote(email_data['body'])
+                mailto_link = f"mailto:?subject={encoded_subject}&body={encoded_body}"
+
+                st.markdown(f"""
+                    <a href="{mailto_link}" target="_blank">
+                        <button style="
+                            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                            color: white;
+                            border: none;
+                            border-radius: 12px;
+                            padding: 12px 24px;
+                            font-weight: 600;
+                            font-size: 1.1rem;
+                            cursor: pointer;
+                            width: 100%;
+                            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+                            transition: all 0.3s ease;
+                        ">
+                            📬 Open in Email Client
+                        </button>
+                    </a>
+                """, unsafe_allow_html=True)
+
+                st.caption("Click to open this email in your default email program")
 
         # Chat interface
         st.markdown("---")
