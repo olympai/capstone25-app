@@ -1,19 +1,38 @@
+"""
+VC Pitch Deck Analysator - Streamlit Hauptanwendung
+
+Diese Anwendung analysiert Startup Pitch Decks mit KI-Unterstützung:
+- PDF-Upload und Analyse mit Claude AI
+- Web-Recherche für zusätzliche Informationen
+- Ampel-Bewertungssystem (grün/gelb/rot)
+- Automatische E-Mail-Generierung für Gründer
+- Interaktiver Chat mit den Analyse-Ergebnissen
+
+Technologien:
+- Streamlit für die Web-Oberfläche
+- Anthropic Claude für KI-Analyse
+- PDF-Verarbeitung mit Base64-Encoding
+"""
+
 import streamlit as st
 import os
 from pathlib import Path
-from ai_config.functions import get_prediction, do_websearch, summary, generate_email
-from ai_config.config import client, model, instruction
+from ai_config.functions import get_prediction, do_websearch, summary, generate_email, do_competitor_analysis, check_red_flags
+from ai_config.config import client, model, instruction, EVALUATION_CRITERIA, build_instruction_with_weights
+from ai_config.pdf_export import generate_executive_summary_pdf
 import urllib.parse
+from datetime import datetime
 
-# Page configuration
+# Seiten-Konfiguration
 st.set_page_config(
-    page_title="VC Pitch Deck Analyzer",
+    page_title="VC Pitch Deck Analysator",
     page_icon="🚀",
     layout="wide",
     initial_sidebar_state="collapsed"
 )
 
-# Custom CSS for better styling with animations and gradients
+# Custom CSS für modernes Design mit Animationen und Farbverläufen
+# Umfasst: Hintergrundanimation, Glassmorphismus-Effekte, interaktive Hover-States
 st.markdown("""
 <style>
     /* Animated gradient background */
@@ -523,73 +542,346 @@ st.markdown("""
     * {
         transition: background-color 0.3s ease, border-color 0.3s ease;
     }
+
+    /* Source Cards Styling */
+    .source-card {
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+        border: 1px solid rgba(102, 126, 234, 0.3);
+        border-radius: 12px;
+        padding: 15px;
+        margin: 10px 0;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        color: inherit;
+    }
+
+    .source-card:hover {
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.2) 0%, rgba(118, 75, 162, 0.2) 100%);
+        border-color: rgba(102, 126, 234, 0.6);
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        transform: translateY(-2px);
+    }
+
+    .source-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 8px;
+        background: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        font-size: 24px;
+    }
+
+    .source-content {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .source-title {
+        font-weight: 600;
+        color: #667eea;
+        margin-bottom: 4px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .source-url {
+        font-size: 0.85em;
+        color: #888;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .linkedin-card {
+        background: linear-gradient(135deg, rgba(10, 102, 194, 0.1) 0%, rgba(0, 119, 181, 0.1) 100%);
+        border-color: rgba(10, 102, 194, 0.3);
+    }
+
+    .linkedin-card:hover {
+        background: linear-gradient(135deg, rgba(10, 102, 194, 0.2) 0%, rgba(0, 119, 181, 0.2) 100%);
+        border-color: rgba(10, 102, 194, 0.6);
+        box-shadow: 0 4px 15px rgba(10, 102, 194, 0.3);
+    }
+
+    .linkedin-card .source-title {
+        color: #0a66c2;
+    }
+
+    .sources-section {
+        margin-top: 20px;
+        padding-top: 20px;
+        border-top: 1px solid rgba(102, 126, 234, 0.2);
+    }
+
+    .sources-subtitle {
+        font-size: 0.95em;
+        font-weight: 600;
+        color: #667eea;
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
 </style>
 """, unsafe_allow_html=True)
 
-# Initialize session state
+# Initialisiere Session State Variablen
+# Session State ermöglicht das Speichern von Daten zwischen Seitenaufrufen
 if 'page' not in st.session_state:
-    st.session_state.page = 'config'  # 'config' or 'results'
+    st.session_state.page = 'config'  # Aktuelle Seite: 'config' (Konfiguration) oder 'results' (Ergebnisse)
 if 'results' not in st.session_state:
-    st.session_state.results = None
+    st.session_state.results = None  # Speichert alle Analyse-Ergebnisse
 if 'chat_history' not in st.session_state:
-    st.session_state.chat_history = []
+    st.session_state.chat_history = []  # Speichert Chat-Verlauf
 if 'workflow_completed' not in st.session_state:
-    st.session_state.workflow_completed = False
+    st.session_state.workflow_completed = False  # Flag ob Analyse abgeschlossen
 if 'uploaded_file' not in st.session_state:
-    st.session_state.uploaded_file = None
+    st.session_state.uploaded_file = None  # Hochgeladenes PDF
 if 'allowed_sources' not in st.session_state:
-    st.session_state.allowed_sources = ["crunchbase.com", "techcrunch.com", "pitchbook.com", "linkedin.com"]
+    st.session_state.allowed_sources = ["crunchbase.com", "techcrunch.com", "pitchbook.com", "linkedin.com"]  # Erlaubte Quellen für Web-Recherche
+if 'criteria_weights' not in st.session_state:
+    st.session_state.criteria_weights = {key: "mittel" for key in EVALUATION_CRITERIA.keys()}  # Gewichtungen für Standard-Kriterien
 if 'additional_criteria' not in st.session_state:
-    st.session_state.additional_criteria = ""
+    st.session_state.additional_criteria = []  # Zusätzliche Kriterien mit Gewichtung [{"weight": str, "description": str}]
+if 'red_flags' not in st.session_state:
+    st.session_state.red_flags = ""  # Red Flags die automatisch zur roten Ampel führen
 
-# Main header
-st.markdown('<div class="main-header">🚀 VC Pitch Deck Analyzer</div>', unsafe_allow_html=True)
+# Hilfsfunktion zum Rendern von Quellen als Cards
+def render_sources(sources: list):
+    """
+    Rendert Quellen als schöne Cards mit separater Darstellung von LinkedIn-Links.
 
-# Configuration Page
+    Args:
+        sources (list): Liste von Quellen (dict mit 'url' und 'title' oder string)
+    """
+    if not sources:
+        return
+
+    # Kategorisiere Quellen
+    linkedin_sources = []
+    other_sources = []
+
+    for source in sources:
+        if isinstance(source, dict):
+            url = source.get('url', '')
+            title = source.get('title', url)
+
+            if 'linkedin.com' in url.lower():
+                linkedin_sources.append({'url': url, 'title': title})
+            else:
+                other_sources.append({'url': url, 'title': title})
+        elif isinstance(source, str):
+            if 'linkedin.com' in source.lower():
+                linkedin_sources.append({'url': source, 'title': source})
+            else:
+                other_sources.append({'url': source, 'title': source})
+
+    # Rendere LinkedIn-Quellen (Founders/Team)
+    if linkedin_sources:
+        st.markdown('<div class="sources-section">', unsafe_allow_html=True)
+        st.markdown('<div class="sources-subtitle">👥 Team & Founder Profile</div>', unsafe_allow_html=True)
+
+        for source in linkedin_sources:
+            url = source['url']
+            title = source['title']
+
+            # Extrahiere Domain für Favicon
+            domain = url.split('/')[2] if len(url.split('/')) > 2 else url
+
+            card_html = f"""
+            <a href="{url}" target="_blank" class="source-card linkedin-card">
+                <div class="source-icon">
+                    <img src="https://www.google.com/s2/favicons?domain={domain}&sz=32"
+                         onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"
+                         style="width: 32px; height: 32px;"/>
+                    <span style="display: none;">💼</span>
+                </div>
+                <div class="source-content">
+                    <div class="source-title">{title}</div>
+                    <div class="source-url">{domain}</div>
+                </div>
+            </a>
+            """
+            st.markdown(card_html, unsafe_allow_html=True)
+
+        st.markdown('</div>', unsafe_allow_html=True)
+
+    # Rendere andere Quellen
+    if other_sources:
+        st.markdown('<div class="sources-section">', unsafe_allow_html=True)
+        st.markdown('<div class="sources-subtitle">🔗 Weitere Quellen</div>', unsafe_allow_html=True)
+
+        for source in other_sources:
+            url = source['url']
+            title = source['title']
+
+            # Extrahiere Domain für Favicon
+            domain = url.split('/')[2] if len(url.split('/')) > 2 else url
+
+            # Icon basierend auf Domain
+            icon = "📰"
+            if 'crunchbase' in domain.lower():
+                icon = "💼"
+            elif 'techcrunch' in domain.lower():
+                icon = "📱"
+            elif 'pitchbook' in domain.lower():
+                icon = "📊"
+            elif 'github' in domain.lower():
+                icon = "💻"
+
+            card_html = f"""
+            <a href="{url}" target="_blank" class="source-card">
+                <div class="source-icon">
+                    <img src="https://www.google.com/s2/favicons?domain={domain}&sz=32"
+                         onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"
+                         style="width: 32px; height: 32px;"/>
+                    <span style="display: none;">{icon}</span>
+                </div>
+                <div class="source-content">
+                    <div class="source-title">{title}</div>
+                    <div class="source-url">{domain}</div>
+                </div>
+            </a>
+            """
+            st.markdown(card_html, unsafe_allow_html=True)
+
+        st.markdown('</div>', unsafe_allow_html=True)
+
+# Haupt-Header der Anwendung
+st.markdown('<div class="main-header">🚀 VC Pitch Deck Analysator</div>', unsafe_allow_html=True)
+
+# ===== KONFIGURATIONSSEITE =====
+# Hier kann der Nutzer ein PDF hochladen und Einstellungen vornehmen
 if st.session_state.page == 'config':
     st.markdown("---")
 
-    # Create a centered container
+    # Erstelle ein zentriertes Layout mit 3 Spalten
     col1, col2, col3 = st.columns([1, 2, 1])
 
     with col2:
-        # File upload section
-        st.markdown("### 📄 Upload Pitch Deck")
+        # Datei-Upload Bereich
+        st.markdown("### 📄 Pitch Deck hochladen")
         uploaded_file = st.file_uploader(
-            "Choose a PDF file",
+            "Wähle eine PDF-Datei",
             type=['pdf'],
-            help="Upload a startup pitch deck in PDF format",
+            help="Lade ein Startup Pitch Deck im PDF-Format hoch",
             key="file_uploader"
         )
 
         if uploaded_file:
             st.session_state.uploaded_file = uploaded_file
-            st.success(f"✅ File uploaded: {uploaded_file.name}")
+            st.success(f"✅ Datei hochgeladen: {uploaded_file.name}")
 
         st.markdown("---")
 
         # Web search sources configuration
-        st.markdown("### 🔍 Web Search Sources")
+        st.markdown("### 🔍 Web-Suchquellen")
         default_sources = ["crunchbase.com", "techcrunch.com", "pitchbook.com", "linkedin.com"]
         sources_text = st.text_area(
-            "Allowed sources (one per line)",
+            "Erlaubte Quellen (eine pro Zeile)",
             value="\n".join(st.session_state.allowed_sources),
             height=120,
-            help="Specify websites to focus on during web research"
+            help="Gib Webseiten an, auf die sich die Web-Recherche konzentrieren soll"
         )
         st.session_state.allowed_sources = [source.strip() for source in sources_text.split('\n') if source.strip()]
 
         st.markdown("---")
 
-        # Additional evaluation criteria
-        st.markdown("### 📋 Additional Criteria")
-        additional_criteria = st.text_area(
-            "Additional evaluation criteria",
-            value=st.session_state.additional_criteria,
-            height=150,
-            help="Add custom criteria to enhance the evaluation prompt"
+        # Kriterien-Gewichtung
+        st.markdown("### ⚖️ Kriterien-Gewichtung")
+        st.markdown("Passe die Wichtigkeit der einzelnen Bewertungskriterien an:")
+        st.info("💡 **Niedrig** = Geringere Gewichtung | **Mittel** = Standard-Gewichtung | **Hoch** = Höchste Priorität (kritisch für Investment-Entscheidung)")
+
+        # Standard-Kriterien mit Gewichtung
+        weight_options = ["niedrig", "mittel", "hoch"]
+        german_labels = {
+            "COMPANY": "Unternehmen",
+            "COMPETITION": "Wettbewerb",
+            "FINANCIALS": "Finanzen",
+            "MARKET": "Markt",
+            "PRODUCT": "Produkt",
+            "TEAM": "Team"
+        }
+
+        for criterion_key in EVALUATION_CRITERIA.keys():
+            col_label, col_weight = st.columns([3, 1])
+            with col_label:
+                st.markdown(f"**{german_labels.get(criterion_key, criterion_key)}**")
+            with col_weight:
+                current_weight = st.session_state.criteria_weights.get(criterion_key, "mittel")
+                weight_index = weight_options.index(current_weight) if current_weight in weight_options else 1
+                new_weight = st.selectbox(
+                    f"Gewichtung {criterion_key}",
+                    weight_options,
+                    index=weight_index,
+                    key=f"weight_{criterion_key}",
+                    label_visibility="collapsed"
+                )
+                st.session_state.criteria_weights[criterion_key] = new_weight
+
+        st.markdown("---")
+
+        # Zusätzliche eigene Kriterien
+        st.markdown("### 📋 Eigene Kriterien hinzufügen")
+        st.markdown("Füge spezifische Bewertungskriterien für deine Investment-These hinzu:")
+
+        # Button zum Hinzufügen eines neuen Kriteriums
+        if st.button("➕ Neues Kriterium hinzufügen", key="add_criterion"):
+            st.session_state.additional_criteria.append({"weight": "mittel", "description": ""})
+            st.rerun()
+
+        # Zeige alle zusätzlichen Kriterien
+        criteria_to_remove = []
+        for idx, criterion in enumerate(st.session_state.additional_criteria):
+            col_weight, col_desc, col_remove = st.columns([1, 4, 1])
+
+            with col_weight:
+                weight = st.selectbox(
+                    f"Gewichtung {idx}",
+                    weight_options,
+                    index=weight_options.index(criterion.get("weight", "mittel")),
+                    key=f"additional_weight_{idx}",
+                    label_visibility="collapsed"
+                )
+                criterion["weight"] = weight
+
+            with col_desc:
+                description = st.text_input(
+                    f"Beschreibung {idx}",
+                    value=criterion.get("description", ""),
+                    key=f"additional_desc_{idx}",
+                    placeholder="z.B. 'Nachhaltigkeit der Lösung', 'Social Impact'",
+                    label_visibility="collapsed"
+                )
+                criterion["description"] = description
+
+            with col_remove:
+                if st.button("🗑️", key=f"remove_{idx}"):
+                    criteria_to_remove.append(idx)
+
+        # Entferne markierte Kriterien
+        for idx in reversed(criteria_to_remove):
+            st.session_state.additional_criteria.pop(idx)
+            st.rerun()
+
+        st.markdown("---")
+
+        # Red Flags Definition
+        st.markdown("### 🚨 Red Flags")
+        red_flags_text = st.text_area(
+            "K.O.-Kriterien (eine pro Zeile)",
+            value=st.session_state.red_flags,
+            height=120,
+            help="Definiere Red Flags, die automatisch zu einer roten Ampel führen (z.B. 'Keine zahlenden Kunden', 'Founder hat bereits gekündigt', 'Regulatorische Probleme')"
         )
-        st.session_state.additional_criteria = additional_criteria
+        st.session_state.red_flags = red_flags_text
 
         st.markdown("---")
 
@@ -597,7 +889,7 @@ if st.session_state.page == 'config':
         col_btn1, col_btn2, col_btn3 = st.columns([1, 2, 1])
         with col_btn2:
             if st.session_state.uploaded_file:
-                if st.button("🚀 Run Analysis", type="primary", use_container_width=True):
+                if st.button("🚀 Analyse starten", type="primary", use_container_width=True):
                     st.session_state.page = 'results'
                     st.session_state.workflow_completed = False
                     st.session_state.results = None
@@ -605,23 +897,24 @@ if st.session_state.page == 'config':
                     st.session_state.generated_email = None
                     st.rerun()
             else:
-                st.button("🚀 Run Analysis", type="primary", use_container_width=True, disabled=True)
-                st.info("Please upload a PDF file to continue")
+                st.button("🚀 Analyse starten", type="primary", use_container_width=True, disabled=True)
+                st.info("Bitte lade eine PDF-Datei hoch, um fortzufahren")
 
         st.markdown('</div>', unsafe_allow_html=True)
 
-# Results Page
+# ===== ERGEBNISSEITE =====
+# Zeigt die Analyse-Ergebnisse, E-Mail-Generierung und Chat-Interface
 elif st.session_state.page == 'results':
-    # Add a back button
-    if st.button("← Back to Configuration"):
+    # Zurück-Button zur Konfigurationsseite
+    if st.button("← Zurück zur Konfiguration"):
         st.session_state.page = 'config'
         st.rerun()
 
     st.markdown("---")
 
-    # Run workflow if not completed
+    # Führe Analyse-Workflow aus, falls noch nicht abgeschlossen
     if not st.session_state.workflow_completed:
-        # Save uploaded file temporarily
+        # Speichere hochgeladenes PDF temporär im tmp/ Ordner
         tmp_dir = Path("tmp")
         tmp_dir.mkdir(exist_ok=True)
         file_path = tmp_dir / st.session_state.uploaded_file.name
@@ -629,20 +922,21 @@ elif st.session_state.page == 'results':
         with open(file_path, "wb") as f:
             f.write(st.session_state.uploaded_file.getbuffer())
 
-        # Create progress container
+        # Container für Fortschrittsanzeige
         progress_container = st.container()
 
         with progress_container:
-            st.markdown('<div class="sub-header">Analysis Progress</div>', unsafe_allow_html=True)
+            st.markdown('<div class="sub-header">Analyse-Fortschritt</div>', unsafe_allow_html=True)
 
-            # Step 1: Pitch Deck Analysis
-            with st.status("📊 Analyzing pitch deck...", expanded=True) as status:
-                st.write("Reading PDF and evaluating...")
+            # Schritt 1: Pitch Deck Analyse
+            with st.status("📊 Pitch Deck wird analysiert...", expanded=True) as status:
+                st.write("PDF wird gelesen und ausgewertet...")
 
-                # Combine instruction with additional criteria
-                combined_instruction = instruction
-                if st.session_state.additional_criteria.strip():
-                    combined_instruction += f"\n\nADDITIONAL CRITERIA:\n{st.session_state.additional_criteria}"
+                # Erstelle Instruktion mit gewichteten Kriterien
+                combined_instruction = build_instruction_with_weights(
+                    criteria_weights=st.session_state.criteria_weights,
+                    additional_criteria=st.session_state.additional_criteria
+                )
 
                 success, prediction, reasoning, missing = get_prediction(
                     client=client,
@@ -652,16 +946,36 @@ elif st.session_state.page == 'results':
                 )
 
                 if success:
-                    st.write("✅ Pitch deck analysis completed")
-                    status.update(label="✅ Pitch deck analysis completed", state="complete")
+                    st.write("✅ Pitch Deck Analyse abgeschlossen")
+                    status.update(label="✅ Pitch Deck Analyse abgeschlossen", state="complete")
                 else:
-                    st.error("❌ Error analyzing pitch deck")
-                    status.update(label="❌ Error analyzing pitch deck", state="error")
+                    st.error("❌ Fehler bei der Pitch Deck Analyse")
+                    status.update(label="❌ Fehler bei der Pitch Deck Analyse", state="error")
                     st.stop()
 
-            # Step 2: Web Research
-            with st.status("🌐 Conducting web research...", expanded=True) as status:
-                st.write(f"Searching for additional information...")
+            # Schritt 2: Wettbewerber-Screening
+            with st.status("🔍 Wettbewerber-Screening wird durchgeführt...", expanded=True) as status:
+                st.write("Identifiziere und analysiere Wettbewerber...")
+
+                competitor_success, competitor_analysis, competitor_sources = do_competitor_analysis(
+                    client=client,
+                    model=model,
+                    startup_info=missing,
+                    allowed_sources=st.session_state.allowed_sources
+                )
+
+                if competitor_success:
+                    st.write("✅ Wettbewerber-Screening abgeschlossen")
+                    status.update(label="✅ Wettbewerber-Screening abgeschlossen", state="complete")
+                else:
+                    st.error("❌ Fehler beim Wettbewerber-Screening")
+                    status.update(label="❌ Fehler beim Wettbewerber-Screening", state="error")
+                    st.stop()
+
+            # Schritt 3: Web Research & Markt-Trends
+            with st.status("🌐 Web-Recherche & Markt-Trends-Analyse...", expanded=True) as status:
+                st.write(f"Suche nach zusätzlichen Informationen...")
+                st.write(f"📊 Analysiere aktuelle Markt-Trends und Branchenentwicklungen...")
 
                 web_success, web_prediction, web_reasoning, web_sources = do_websearch(
                     client=client,
@@ -671,16 +985,48 @@ elif st.session_state.page == 'results':
                 )
 
                 if web_success:
-                    st.write("✅ Web research completed")
-                    status.update(label="✅ Web research completed", state="complete")
+                    st.write("✅ Web-Recherche und Markt-Trends-Analyse abgeschlossen")
+                    status.update(label="✅ Web-Recherche und Markt-Trends abgeschlossen", state="complete")
                 else:
-                    st.error("❌ Error during web research")
-                    status.update(label="❌ Error during web research", state="error")
+                    st.error("❌ Fehler bei der Web-Recherche")
+                    status.update(label="❌ Fehler bei der Web-Recherche", state="error")
                     st.stop()
 
-            # Step 3: Generate Summary
-            with st.status("📝 Generating comprehensive summary...", expanded=True) as status:
-                st.write("Synthesizing findings...")
+            # Schritt 4: Red Flag Check
+            triggered_red_flags = []
+            red_flag_reasoning = ""
+
+            if st.session_state.red_flags.strip():
+                with st.status("🚨 Red Flags werden überprüft...", expanded=True) as status:
+                    st.write("Prüfe K.O.-Kriterien...")
+
+                    # Parse Red Flags Liste
+                    red_flags_list = [flag.strip() for flag in st.session_state.red_flags.split('\n') if flag.strip()]
+
+                    red_flag_success, triggered_red_flags, red_flag_reasoning = check_red_flags(
+                        client=client,
+                        model=model,
+                        pitch_deck_analysis=reasoning,
+                        web_research_analysis=web_reasoning,
+                        competitor_analysis=competitor_analysis,
+                        red_flags_list=red_flags_list
+                    )
+
+                    if red_flag_success:
+                        if triggered_red_flags:
+                            st.write(f"⚠️ {len(triggered_red_flags)} Red Flag(s) getroffen!")
+                            status.update(label=f"⚠️ {len(triggered_red_flags)} Red Flag(s) getroffen!", state="complete")
+                        else:
+                            st.write("✅ Keine Red Flags getroffen")
+                            status.update(label="✅ Keine Red Flags getroffen", state="complete")
+                    else:
+                        st.error("❌ Fehler beim Red Flag Check")
+                        status.update(label="❌ Fehler beim Red Flag Check", state="error")
+                        st.stop()
+
+            # Schritt 5: Zusammenfassung erstellen
+            with st.status("📝 Zusammenfassung wird erstellt...", expanded=True) as status:
+                st.write("Ergebnisse werden zusammengeführt...")
 
                 summary_success, summary_text, final_prediction = summary(
                     model=model,
@@ -691,23 +1037,36 @@ elif st.session_state.page == 'results':
                 )
 
                 if summary_success:
-                    st.write("✅ Summary generated")
-                    status.update(label="✅ Summary generated", state="complete")
+                    st.write("✅ Zusammenfassung erstellt")
+                    status.update(label="✅ Zusammenfassung erstellt", state="complete")
                 else:
-                    st.error("❌ Error generating summary")
-                    status.update(label="❌ Error generating summary", state="error")
+                    st.error("❌ Fehler beim Erstellen der Zusammenfassung")
+                    status.update(label="❌ Fehler beim Erstellen der Zusammenfassung", state="error")
                     st.stop()
 
-            # Store results in session state
+            # Ampel-Logik: Wenn Red Flags getroffen wurden, ist die Ampel immer rot
+            if triggered_red_flags:
+                final_prediction = "red"
+                st.warning(f"⚠️ Finale Bewertung auf ROT gesetzt wegen {len(triggered_red_flags)} getroffener Red Flag(s)!")
+
+            # Speichere Ergebnisse im Session State
             st.session_state.results = {
                 'pitch_deck': {
                     'prediction': prediction,
                     'reasoning': reasoning
                 },
+                'competitor_analysis': {
+                    'analysis': competitor_analysis,
+                    'sources': competitor_sources
+                },
                 'web_research': {
                     'prediction': web_prediction,
                     'reasoning': web_reasoning,
                     'sources': web_sources
+                },
+                'red_flags': {
+                    'triggered': triggered_red_flags,
+                    'reasoning': red_flag_reasoning
                 },
                 'summary': summary_text,
                 'final_prediction': final_prediction,
@@ -715,14 +1074,14 @@ elif st.session_state.page == 'results':
             }
             st.session_state.workflow_completed = True
 
-            st.success("🎉 Analysis complete!")
+            st.success("🎉 Analyse abgeschlossen!")
             st.rerun()
 
     # Display results if available
     if st.session_state.results:
         results = st.session_state.results
 
-        st.markdown('<div class="sub-header">Analysis Results</div>', unsafe_allow_html=True)
+        st.markdown('<div class="sub-header">Analyse-Ergebnisse</div>', unsafe_allow_html=True)
 
         # Traffic light indicator
         col1, col2, col3 = st.columns([1, 2, 1])
@@ -733,48 +1092,119 @@ elif st.session_state.page == 'results':
                 'yellow': '🟡',
                 'red': '🔴'
             }
-            st.markdown(f"### {color_emoji[color_class]} Overall Assessment")
+            st.markdown(f"### {color_emoji[color_class]} Gesamtbewertung")
             st.markdown(f'<div class="traffic-light {color_class}"></div>', unsafe_allow_html=True)
 
             if color_class == 'green':
-                st.success("Both analyses predict success")
+                st.success("Beide Analysen prognostizieren Erfolg")
             elif color_class == 'red':
-                st.error("Both analyses predict failure")
+                # Prüfe ob Red Flags der Grund für die rote Ampel sind
+                if results.get('red_flags') and results['red_flags'].get('triggered'):
+                    st.error(f"🚨 K.O.-Kriterium getroffen: {len(results['red_flags']['triggered'])} Red Flag(s)")
+                else:
+                    st.error("Beide Analysen prognostizieren Misserfolg")
             else:
-                st.warning("Mixed predictions - further investigation recommended")
+                st.warning("Gemischte Prognosen - weitere Untersuchung empfohlen")
+
+        # Red Flag Warnung (falls vorhanden)
+        if results.get('red_flags') and results['red_flags'].get('triggered'):
+            st.markdown("---")
+            st.markdown("### 🚨 K.O.-Kriterien Warnung")
+
+            # Erstelle eine auffällige Warnung
+            warning_text = f"""
+            <div style="
+                background: linear-gradient(135deg, rgba(220, 53, 69, 0.2) 0%, rgba(255, 0, 0, 0.1) 100%);
+                border: 2px solid rgba(220, 53, 69, 0.6);
+                border-radius: 12px;
+                padding: 20px;
+                margin: 20px 0;
+                box-shadow: 0 0 30px rgba(220, 53, 69, 0.4);
+            ">
+                <h4 style="color: #ff4444; margin-top: 0;">⚠️ {len(results['red_flags']['triggered'])} Red Flag(s) identifiziert</h4>
+                <p style="color: #ffffff;">Die folgenden K.O.-Kriterien wurden getroffen. Die Bewertung wurde automatisch auf ROT gesetzt.</p>
+            </div>
+            """
+            st.markdown(warning_text, unsafe_allow_html=True)
+
+            # Zeige die Red Flags in einer Card
+            st.markdown(f'<div class="result-card">{results["red_flags"]["reasoning"]}</div>', unsafe_allow_html=True)
 
         st.markdown("---")
 
         # Summary
-        st.markdown("### 📝 Executive Summary")
+        st.markdown("### 📝 Zusammenfassung")
         st.markdown(f'<div class="result-card">{results["summary"]}</div>', unsafe_allow_html=True)
 
-        # Detailed reasoning in accordions
-        st.markdown("### 🔍 Detailed Analysis")
+        # PDF Export Button
+        st.markdown("---")
+        st.markdown("### 📄 Export")
 
-        with st.expander("📄 Pitch Deck Analysis", expanded=False):
+        col_pdf1, col_pdf2, col_pdf3 = st.columns([1, 2, 1])
+        with col_pdf2:
+            st.info("💡 Exportiere eine professionelle PDF-Zusammenfassung mit allen wichtigen Ergebnissen")
+
+            if st.button("📄 Executive Summary als PDF exportieren", type="secondary", use_container_width=True):
+                try:
+                    # Generiere PDF
+                    with st.spinner("PDF wird generiert..."):
+                        pdf_bytes = generate_executive_summary_pdf(results)
+
+                    # Erstelle Dateinamen
+                    startup_name = results.get('filename', 'startup').replace('.pdf', '').replace(' ', '_')
+                    date_str = datetime.now().strftime("%Y%m%d")
+                    pdf_filename = f"Executive_Summary_{startup_name}_{date_str}.pdf"
+
+                    # Download Button
+                    st.download_button(
+                        label="⬇️ PDF herunterladen",
+                        data=pdf_bytes,
+                        file_name=pdf_filename,
+                        mime="application/pdf",
+                        use_container_width=True
+                    )
+                    st.success("✅ PDF erfolgreich generiert!")
+
+                except Exception as e:
+                    st.error(f"❌ Fehler beim Generieren der PDF: {str(e)}")
+                    st.exception(e)
+
+        st.markdown("---")
+
+        # Detailed reasoning in accordions
+        st.markdown("### 🔍 Detaillierte Analyse")
+
+        with st.expander("📄 Pitch Deck Analyse", expanded=False):
             prediction_emoji = "✅" if results['pitch_deck']['prediction'] else "❌"
-            st.markdown(f"**Prediction:** {prediction_emoji} {'Success' if results['pitch_deck']['prediction'] else 'Failure'}")
-            st.markdown("**Reasoning:**")
+            st.markdown(f"**Prognose:** {prediction_emoji} {'Erfolg' if results['pitch_deck']['prediction'] else 'Misserfolg'}")
+            st.markdown("**Begründung:**")
             st.markdown(results['pitch_deck']['reasoning'])
 
-        with st.expander("🌐 Web Research Analysis", expanded=False):
+        # Red Flags Accordion (falls vorhanden)
+        if results.get('red_flags') and results['red_flags'].get('triggered'):
+            with st.expander("🚨 K.O.-Kriterien Check", expanded=True):
+                st.markdown(f"**Status:** ❌ {len(results['red_flags']['triggered'])} Red Flag(s) getroffen")
+                st.markdown("**Details:**")
+                st.markdown(results['red_flags']['reasoning'])
+
+        with st.expander("🔍 Wettbewerber-Screening", expanded=False):
+            st.markdown(results['competitor_analysis']['analysis'])
+
+            if results['competitor_analysis']['sources']:
+                render_sources(results['competitor_analysis']['sources'])
+
+        with st.expander("🌐 Web-Recherche & Markt-Trends", expanded=False):
             prediction_emoji = "✅" if results['web_research']['prediction'] else "❌"
-            st.markdown(f"**Prediction:** {prediction_emoji} {'Success' if results['web_research']['prediction'] else 'Failure'}")
-            st.markdown("**Reasoning:**")
+            st.markdown(f"**Prognose:** {prediction_emoji} {'Erfolg' if results['web_research']['prediction'] else 'Misserfolg'}")
+            st.markdown("**Analyse (inkl. aktueller Markt-Trends):**")
             st.markdown(results['web_research']['reasoning'])
 
             if results['web_research']['sources']:
-                st.markdown("**Sources:**")
-                for i, source in enumerate(results['web_research']['sources'], 1):
-                    if isinstance(source, dict):
-                        st.markdown(f"{i}. [{source['title']}]({source['url']})")
-                    else:
-                        st.markdown(f"{i}. {source}")
+                render_sources(results['web_research']['sources'])
 
         # Email Generation Section
         st.markdown("---")
-        st.markdown('<div class="sub-header">Generate Founder Response</div>', unsafe_allow_html=True)
+        st.markdown('<div class="sub-header">E-Mail-Antwort generieren</div>', unsafe_allow_html=True)
 
         # Initialize email state if not exists
         if 'generated_email' not in st.session_state:
@@ -785,11 +1215,12 @@ elif st.session_state.page == 'results':
             # Determine email type
             email_type = "invitation" if results['final_prediction'] == 'green' else "rejection"
             email_icon = "✅" if email_type == "invitation" else "📧"
+            email_type_de = "Einladung" if email_type == "invitation" else "Absage"
 
-            st.info(f"{email_icon} Email Type: **{email_type.title()}** - Based on {'positive' if email_type == 'invitation' else 'mixed or negative'} analysis results")
+            st.info(f"{email_icon} E-Mail-Typ: **{email_type_de}** - Basierend auf {'positiven' if email_type == 'invitation' else 'gemischten oder negativen'} Analyse-Ergebnissen")
 
-            if st.button("📝 Generate Email", type="primary", use_container_width=True):
-                with st.spinner("Generating personalized email..."):
+            if st.button("📝 E-Mail generieren", type="primary", use_container_width=True):
+                with st.spinner("Personalisierte E-Mail wird generiert..."):
                     # Extract startup name from filename (remove .pdf extension)
                     startup_name = results['filename'].replace('.pdf', '').replace('_', ' ').replace('-', ' ').title()
 
@@ -808,17 +1239,17 @@ elif st.session_state.page == 'results':
                             'body': body,
                             'type': email_type
                         }
-                        st.success("✅ Email generated successfully!")
+                        st.success("✅ E-Mail erfolgreich generiert!")
                         st.rerun()
 
         # Display generated email if available
         if st.session_state.generated_email:
-            st.markdown("### 📧 Generated Email")
+            st.markdown("### 📧 Generierte E-Mail")
             email_data = st.session_state.generated_email
 
             with st.container():
-                st.markdown(f"**Subject:** {email_data['subject']}")
-                st.markdown("**Body:**")
+                st.markdown(f"**Betreff:** {email_data['subject']}")
+                st.markdown("**Nachricht:**")
                 st.markdown(email_data['body'])
                 st.markdown('</div>', unsafe_allow_html=True)
 
@@ -845,50 +1276,59 @@ elif st.session_state.page == 'results':
                             box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
                             transition: all 0.3s ease;
                         ">
-                            📬 Open in Email Client
+                            📬 In E-Mail-Programm öffnen
                         </button>
                     </a>
                 """, unsafe_allow_html=True)
 
-                st.caption("Click to open this email in your default email program")
+                st.caption("Klicken, um diese E-Mail in deinem Standard-E-Mail-Programm zu öffnen")
 
-        # Chat interface
+        # ===== CHAT-INTERFACE =====
+        # Ermöglicht interaktive Fragen zu den Analyse-Ergebnissen mit Zugriff auf das PDF und Web-Suche
         st.markdown("---")
-        st.markdown('<div class="sub-header">💬 Chat with Your Data</div>', unsafe_allow_html=True)
-        st.markdown("Ask questions about the analysis results")
+        st.markdown('<div class="sub-header">💬 Chat mit deinen Daten</div>', unsafe_allow_html=True)
+        st.markdown("Stelle Fragen zu den Analyse-Ergebnissen")
 
-        # Create context from results
-        context = f"""
-        Pitch Deck Analysis Results for {results['filename']}:
-
-        Overall Assessment: {results['final_prediction']}
-
-        Pitch Deck Prediction: {'Success' if results['pitch_deck']['prediction'] else 'Failure'}
-        Pitch Deck Reasoning: {results['pitch_deck']['reasoning']}
-
-        Web Research Prediction: {'Success' if results['web_research']['prediction'] else 'Failure'}
-        Web Research Reasoning: {results['web_research']['reasoning']}
-
-        Executive Summary: {results['summary']}
+        # Erstelle Kontext-Informationen aus den Analyse-Ergebnissen für den Chat
+        red_flags_context = ""
+        if results.get('red_flags') and results['red_flags'].get('triggered'):
+            red_flags_context = f"""
+        Red Flags: {len(results['red_flags']['triggered'])} K.O.-Kriterien getroffen
+        Red Flag Details: {results['red_flags']['reasoning']}
+        WICHTIG: Die Bewertung wurde wegen Red Flags auf ROT gesetzt!
         """
 
-        # Display chat history
+        context = f"""
+        Pitch Deck Analyse-Ergebnisse für {results['filename']}:
+
+        Gesamtbewertung: {results['final_prediction']}
+        {red_flags_context}
+        Pitch Deck Prognose: {'Erfolg' if results['pitch_deck']['prediction'] else 'Misserfolg'}
+        Pitch Deck Begründung: {results['pitch_deck']['reasoning']}
+
+        Web-Recherche Prognose: {'Erfolg' if results['web_research']['prediction'] else 'Misserfolg'}
+        Web-Recherche Begründung: {results['web_research']['reasoning']}
+
+        Zusammenfassung: {results['summary']}
+        """
+
+        # Zeige bisherigen Chat-Verlauf
         for message in st.session_state.chat_history:
             with st.chat_message(message["role"]):
                 st.markdown(message["content"])
 
-        # Chat input
-        if prompt := st.chat_input("Ask a question about the analysis..."):
-            # Add user message to chat history
+        # Chat-Eingabefeld
+        if prompt := st.chat_input("Stelle eine Frage zur Analyse..."):
+            # Füge Nutzer-Nachricht zum Chat-Verlauf hinzu
             st.session_state.chat_history.append({"role": "user", "content": prompt})
 
-            # Display user message immediately
+            # Zeige Nutzer-Nachricht sofort an
             with st.chat_message("user"):
                 st.markdown(prompt)
 
-            # Generate response
+            # Generiere Antwort mit Claude
             with st.chat_message("assistant"):
-                with st.spinner("Thinking..."):
+                with st.spinner("Denke nach..."):
                     # Load and encode the PDF
                     import base64
                     tmp_path = Path("tmp") / results['filename']
@@ -926,7 +1366,7 @@ elif st.session_state.page == 'results':
                     response = client.messages.create(
                         model=model,
                         max_tokens=8192,
-                        system=f"You are a helpful VC analyst assistant. You have access to the original pitch deck PDF and the analysis results. Answer questions based on both the PDF and the following analysis context:\n\n{context}\n\nYou also have access to web search to find additional information if needed.",
+                        system=f"Du bist ein hilfreicher VC-Analyst-Assistent. Du hast Zugriff auf das ursprüngliche Pitch Deck PDF und die Analyse-Ergebnisse. Beantworte Fragen basierend auf dem PDF und dem folgenden Analyse-Kontext:\n\n{context}\n\nDu hast auch Zugriff auf eine Web-Suche, um bei Bedarf zusätzliche Informationen zu finden. Antworte immer auf Deutsch.",
                         messages=chat_messages,
                         tools=[
                             {
@@ -954,7 +1394,7 @@ elif st.session_state.page == 'results':
 
                     # Add sources to message if any
                     if chat_sources:
-                        assistant_message += "\n\n**Sources:**\n"
+                        assistant_message += "\n\n**Quellen:**\n"
                         for i, source in enumerate(chat_sources, 1):
                             assistant_message += f"{i}. [{source['title']}]({source['url']})\n"
 
