@@ -54,7 +54,7 @@ def get_prediction(client: anthropic.Anthropic = client, model: str = model, ins
         # Create message with base64-encoded PDF and tool
         message = client.messages.create(
             model=model,
-            max_tokens=2048,
+            max_tokens=8192,
             system=instruction,
             messages=[
                 {
@@ -126,7 +126,7 @@ def do_websearch(client: anthropic.Anthropic = client, model: str = model, missi
 
         response = client.messages.create(
             model=model,
-            max_tokens=4096,
+            max_tokens=8192,
             messages=[
                 {
                     "role": "user",
@@ -213,7 +213,7 @@ def summary(model: str = model, text_1: str = "", text_2: str = "", score_1: boo
         # summary
         message = client.messages.create(
             model=model,
-            max_tokens=1024,
+            max_tokens=4096,
             messages=[
                 {
                     "role": "user",
@@ -281,7 +281,7 @@ BODY: [email body]
 
         message = client.messages.create(
             model=model,
-            max_tokens=1024,
+            max_tokens=4096,
             messages=[
                 {
                     "role": "user",

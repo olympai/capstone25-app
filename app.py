@@ -196,7 +196,7 @@ st.markdown("""
     }
 
     .result-card:hover {
-        transform: translateY(-8px) scale(1.02);
+        transform: translateY(-8px);
         box-shadow: 0 0 40px rgba(102, 126, 234, 0.6),
                     0 0 80px rgba(102, 126, 234, 0.4),
                     0 20px 60px rgba(0, 0, 0, 0.4);
@@ -547,7 +547,6 @@ st.markdown('<div class="main-header">🚀 VC Pitch Deck Analyzer</div>', unsafe
 
 # Configuration Page
 if st.session_state.page == 'config':
-    st.markdown("Configure your pitch deck analysis")
     st.markdown("---")
 
     # Create a centered container
@@ -618,7 +617,6 @@ elif st.session_state.page == 'results':
         st.session_state.page = 'config'
         st.rerun()
 
-    st.markdown("Analyze startup pitch decks with AI-powered evaluation and web research")
     st.markdown("---")
 
     # Run workflow if not completed
@@ -664,7 +662,6 @@ elif st.session_state.page == 'results':
             # Step 2: Web Research
             with st.status("🌐 Conducting web research...", expanded=True) as status:
                 st.write(f"Searching for additional information...")
-                st.write(f"Focusing on: {', '.join(st.session_state.allowed_sources)}")
 
                 web_success, web_prediction, web_reasoning, web_sources = do_websearch(
                     client=client,
@@ -725,8 +722,7 @@ elif st.session_state.page == 'results':
     if st.session_state.results:
         results = st.session_state.results
 
-        st.markdown("---")
-        st.markdown('<div class="sub-header">📊 Analysis Results</div>', unsafe_allow_html=True)
+        st.markdown('<div class="sub-header">Analysis Results</div>', unsafe_allow_html=True)
 
         # Traffic light indicator
         col1, col2, col3 = st.columns([1, 2, 1])
@@ -778,7 +774,7 @@ elif st.session_state.page == 'results':
 
         # Email Generation Section
         st.markdown("---")
-        st.markdown('<div class="sub-header">✉️ Generate Founder Response</div>', unsafe_allow_html=True)
+        st.markdown('<div class="sub-header">Generate Founder Response</div>', unsafe_allow_html=True)
 
         # Initialize email state if not exists
         if 'generated_email' not in st.session_state:
@@ -886,7 +882,7 @@ elif st.session_state.page == 'results':
             # Add user message to chat history
             st.session_state.chat_history.append({"role": "user", "content": prompt})
 
-            # Display user message
+            # Display user message immediately
             with st.chat_message("user"):
                 st.markdown(prompt)
 
@@ -929,7 +925,7 @@ elif st.session_state.page == 'results':
 
                     response = client.messages.create(
                         model=model,
-                        max_tokens=2048,
+                        max_tokens=8192,
                         system=f"You are a helpful VC analyst assistant. You have access to the original pitch deck PDF and the analysis results. Answer questions based on both the PDF and the following analysis context:\n\n{context}\n\nYou also have access to web search to find additional information if needed.",
                         messages=chat_messages,
                         tools=[
@@ -956,16 +952,17 @@ elif st.session_state.page == 'results':
                                             'title': getattr(citation, 'title', citation.url)
                                         })
 
-                    st.markdown(assistant_message)
-
-                    # Display sources if any
+                    # Add sources to message if any
                     if chat_sources:
-                        st.markdown("**Sources:**")
+                        assistant_message += "\n\n**Sources:**\n"
                         for i, source in enumerate(chat_sources, 1):
-                            st.markdown(f"{i}. [{source['title']}]({source['url']})")
+                            assistant_message += f"{i}. [{source['title']}]({source['url']})\n"
 
-                    # Add assistant message to chat history
-                    st.session_state.chat_history.append({
-                        "role": "assistant",
-                        "content": assistant_message
-                    })
+                # Display assistant message
+                st.markdown(assistant_message)
+
+                # Add assistant message to chat history
+                st.session_state.chat_history.append({
+                    "role": "assistant",
+                    "content": assistant_message
+                })

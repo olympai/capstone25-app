@@ -66,10 +66,6 @@ vision, drive and motivation; presence of serial entrepreneurs with successful f
 dynamics and collaboration; leadership experience of the founding team; depth of industry-specific expertise;
 strength and relevance of the professional network; founder stability and retention risk over the long term.
 
-TECH: defensibility of the technology (difficulty of imitation, IP, data or architectural moat); complexity of
-the technical solution (balance between feasibility and meaningful differentiation); quality and suitability of
-the tech stack for the problem, scale requirements and future product roadmap.
-
 Reason through all dimensions holistically, considering both qualitative narrative and quantitative evidence.
 Ignore hype and focus on fundamentals such as moat, execution capability, product–market fit and financial
 viability.

@@ -163,7 +163,3 @@ You can customize these in the sidebar.
 - Ensure all dependencies are installed: `pip install -r requirements.txt`
 - Check Python version: `python --version` (should be 3.9+)
 - Try clearing Streamlit cache: `streamlit cache clear`
-
-## Support
-
-For issues and questions, please open an issue on GitHub.
