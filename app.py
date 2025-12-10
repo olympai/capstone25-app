@@ -755,7 +755,7 @@ def render_sources(sources: list):
         st.markdown('</div>', unsafe_allow_html=True)
 
 # Haupt-Header der Anwendung
-st.markdown('<div class="main-header">🚀 VC Pitch Deck Analysator</div>', unsafe_allow_html=True)
+st.markdown('<div class="main-header">🚀 F Technologies Pitch Deck Analysator</div>', unsafe_allow_html=True)
 
 # ===== KONFIGURATIONSSEITE =====
 # Hier kann der Nutzer ein PDF hochladen und Einstellungen vornehmen
@@ -783,7 +783,7 @@ if st.session_state.page == 'config':
 
         # Web search sources configuration
         st.markdown("### 🔍 Web-Suchquellen")
-        default_sources = ["crunchbase.com", "techcrunch.com", "pitchbook.com", "linkedin.com"]
+        default_sources = []
         sources_text = st.text_area(
             "Erlaubte Quellen (eine pro Zeile)",
             value="\n".join(st.session_state.allowed_sources),
