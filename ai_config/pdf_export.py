@@ -16,6 +16,131 @@ from reportlab.lib import colors
 from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_JUSTIFY
 from datetime import datetime
 import io
+import re
+
+def clean_and_simplify_text(text: str) -> str:
+    """
+    Bereinigt Text von Markdown und vereinfacht ihn für PDF-Ausgabe.
+
+    Args:
+        text (str): Text mit möglicherweise Markdown-Formatierung
+
+    Returns:
+        str: Bereinigter, ReportLab-kompatibler Text
+    """
+    if not text:
+        return ""
+
+    # Entferne führende/trailing Whitespace
+    text = text.strip()
+
+    # Entferne Code-Blöcke und Inline-Code
+    text = re.sub(r'```[\s\S]*?```', '', text)
+    text = re.sub(r'`[^`]+`', '', text)
+
+    # Entferne Markdown-Tabellen (| col1 | col2 |)
+    # Tabellen werden zu einfachen Listen konvertiert
+    lines = text.split('\n')
+    cleaned_lines = []
+    in_table = False
+
+    for line in lines:
+        # Erkenne Tabellenzeilen (beginnen und enden mit |)
+        if re.match(r'^\s*\|.*\|\s*$', line):
+            # Ist das eine Trennzeile? (|---|---| oder |:---|:---|)
+            if re.match(r'^\s*\|[\s\-:]+\|\s*$', line):
+                in_table = True
+                continue  # Überspringe Trennzeilen komplett
+
+            # Konvertiere Tabellen-Zeile zu Bullet-Point
+            # Extrahiere Zellen und entferne leere
+            cells = [cell.strip() for cell in line.split('|') if cell.strip()]
+
+            # Filtere Zellen die nur aus Bindestrichen bestehen
+            cells = [cell for cell in cells if not re.match(r'^[\-:]+$', cell)]
+
+            if cells:
+                # Erste Zelle fett, Rest normal
+                if len(cells) > 1:
+                    cleaned_lines.append(f"• {cells[0]}: {', '.join(cells[1:])}")
+                else:
+                    cleaned_lines.append(f"• {cells[0]}")
+            continue
+        else:
+            in_table = False
+            cleaned_lines.append(line)
+
+    text = '\n'.join(cleaned_lines)
+
+    # Entferne verbleibende Pipe-Zeichen
+    text = text.replace('|', '')
+
+    # Entferne geschweifte Klammern {} (oft aus JSON oder Template-Syntax)
+    text = text.replace('{', '')
+    text = text.replace('}', '')
+
+    # Entferne eckige Klammern [] (oft aus Markdown-Links)
+    text = re.sub(r'\[([^\]]+)\]\([^\)]+\)', r'\1', text)  # [text](url) -> text
+    text = text.replace('[', '')
+    text = text.replace(']', '')
+
+    # Escape XML-Zeichen
+    text = text.replace('&', '&amp;')
+    text = text.replace('<', '&lt;')
+    text = text.replace('>', '&gt;')
+
+    # Entferne Header-Markierungen (###, ##, #)
+    text = re.sub(r'^#{1,6}\s+', '', text, flags=re.MULTILINE)
+
+    # Verarbeite Text zeilenweise für Formatierung
+    lines = text.split('\n')
+    converted_lines = []
+
+    for line in lines:
+        # Überspringe leere Zeilen (werden später wieder hinzugefügt)
+        original_line = line
+
+        # Entferne alle führenden Leerzeichen/Tabs (Einrückungen)
+        line = line.lstrip()
+
+        # Konvertiere Bullet-Points BEVOR wir * entfernen
+        if re.match(r'^[-*+•]\s+', line):
+            line = re.sub(r'^[-*+•]\s+', '• ', line)
+
+        # Jetzt Markdown-Formatierung auf der Zeile
+        # Konvertiere Bold-Text (**text** und __text__)
+        line = re.sub(r'\*\*([^\*]+)\*\*', r'<b>\1</b>', line)
+        line = re.sub(r'__([^_]+)__', r'<b>\1</b>', line)
+
+        # Entferne restliche * und _ für Italic (machen wir einfach weg)
+        line = re.sub(r'\*([^\*]+)\*', r'\1', line)
+        line = re.sub(r'_([^_]+)_', r'\1', line)
+
+        # Entferne übrig gebliebene einzelne * und _
+        line = line.replace('*', '')
+        line = line.replace('_', '')
+
+        # Nur nicht-leere Zeilen hinzufügen
+        if line.strip():
+            converted_lines.append(line)
+
+    text = '\n'.join(converted_lines)
+
+    # Ersetze mehrfache Leerzeilen
+    text = re.sub(r'\n{3,}', '\n\n', text)
+
+    # Konvertiere Zeilenumbrüche zu HTML
+    text = text.replace('\n\n', '<br/><br/>')
+    text = text.replace('\n', '<br/>')
+
+    # Bereinige mehrfache <br/> Tags
+    text = re.sub(r'(<br/>){3,}', '<br/><br/>', text)
+
+    # Entferne führende/trailing <br/> Tags
+    text = re.sub(r'^(<br/>)+', '', text)
+    text = re.sub(r'(<br/>)+$', '', text)
+
+    return text.strip()
 
 def generate_executive_summary_pdf(results: dict, filename: str = "executive_summary.pdf"):
     """
@@ -83,7 +208,7 @@ def generate_executive_summary_pdf(results: dict, filename: str = "executive_sum
     story.append(Paragraph("Executive Summary", styles['Heading2']))
     story.append(Spacer(1, 0.3*inch))
 
-    # Metadaten
+    # Metadaten-Tabelle mit verbessertem Styling
     startup_name = results.get('filename', 'Unknown').replace('.pdf', '').replace('_', ' ').title()
     date_str = datetime.now().strftime("%d.%m.%Y")
 
@@ -93,13 +218,30 @@ def generate_executive_summary_pdf(results: dict, filename: str = "executive_sum
         ["Analysator:", "VC Pitch Deck Analysator"]
     ]
 
-    meta_table = Table(meta_data, colWidths=[4*cm, 10*cm])
+    meta_table = Table(meta_data, colWidths=[4.5*cm, 12*cm])
     meta_table.setStyle(TableStyle([
+        # Schriftarten
         ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
-        ('FONTSIZE', (0, 0), (-1, -1), 10),
+        ('FONTNAME', (1, 0), (1, -1), 'Helvetica'),
+        ('FONTSIZE', (0, 0), (-1, -1), 11),
+
+        # Farben
         ('TEXTCOLOR', (0, 0), (0, -1), colors.HexColor('#667eea')),
-        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
-        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+        ('TEXTCOLOR', (1, 0), (1, -1), colors.HexColor('#333333')),
+        ('BACKGROUND', (0, 0), (0, -1), colors.HexColor('#f0f4ff')),
+
+        # Ausrichtung
+        ('ALIGN', (0, 0), (0, -1), 'RIGHT'),
+        ('ALIGN', (1, 0), (1, -1), 'LEFT'),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+
+        # Rahmen und Padding
+        ('BOX', (0, 0), (-1, -1), 1, colors.HexColor('#e0e7ff')),
+        ('LINEBELOW', (0, 0), (-1, -2), 0.5, colors.HexColor('#e0e7ff')),
+        ('LEFTPADDING', (0, 0), (-1, -1), 12),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 12),
+        ('TOPPADDING', (0, 0), (-1, -1), 8),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
     ]))
     story.append(meta_table)
     story.append(Spacer(1, 0.5*inch))
@@ -150,7 +292,8 @@ def generate_executive_summary_pdf(results: dict, filename: str = "executive_sum
     # Zusammenfassung
     story.append(Paragraph("Zusammenfassung", heading_style))
     summary_text = results.get('summary', 'Keine Zusammenfassung verfügbar.')
-    story.append(Paragraph(summary_text, normal_style))
+    summary_clean = clean_and_simplify_text(summary_text)
+    story.append(Paragraph(summary_clean, normal_style))
     story.append(Spacer(1, 0.3*inch))
 
     # Detaillierte Ergebnisse
@@ -163,7 +306,8 @@ def generate_executive_summary_pdf(results: dict, filename: str = "executive_sum
     story.append(Paragraph(f"<b>Pitch Deck Analyse:</b> {pitch_emoji}", normal_style))
     pitch_reasoning = results.get('pitch_deck', {}).get('reasoning', '')
     if pitch_reasoning:
-        story.append(Paragraph(pitch_reasoning[:500] + "..." if len(pitch_reasoning) > 500 else pitch_reasoning, normal_style))
+        pitch_clean = clean_and_simplify_text(pitch_reasoning)
+        story.append(Paragraph(pitch_clean, normal_style))
     story.append(Spacer(1, 0.2*inch))
 
     # Web-Recherche
@@ -173,7 +317,8 @@ def generate_executive_summary_pdf(results: dict, filename: str = "executive_sum
     story.append(Paragraph(f"<b>Web-Recherche:</b> {web_emoji}", normal_style))
     web_reasoning = results.get('web_research', {}).get('reasoning', '')
     if web_reasoning:
-        story.append(Paragraph(web_reasoning[:500] + "..." if len(web_reasoning) > 500 else web_reasoning, normal_style))
+        web_clean = clean_and_simplify_text(web_reasoning)
+        story.append(Paragraph(web_clean, normal_style))
     story.append(Spacer(1, 0.2*inch))
 
     # Wettbewerber-Screening (falls vorhanden)
@@ -181,11 +326,8 @@ def generate_executive_summary_pdf(results: dict, filename: str = "executive_sum
         story.append(Paragraph("<b>Wettbewerber-Screening:</b>", normal_style))
         competitor_text = results['competitor_analysis'].get('analysis', '')
         if competitor_text:
-            # Extrahiere nur die wichtigsten Punkte
-            lines = competitor_text.split('\n')
-            key_lines = [line for line in lines if line.strip() and ('**' in line or line.startswith('-'))]
-            competitor_summary = '\n'.join(key_lines[:10])  # Max 10 Zeilen
-            story.append(Paragraph(competitor_summary, normal_style))
+            competitor_clean = clean_and_simplify_text(competitor_text)
+            story.append(Paragraph(competitor_clean, normal_style))
         story.append(Spacer(1, 0.2*inch))
 
     # Red Flags Details (falls vorhanden)
@@ -202,7 +344,8 @@ def generate_executive_summary_pdf(results: dict, filename: str = "executive_sum
         )
 
         red_flag_text = results['red_flags'].get('reasoning', '')
-        story.append(Paragraph(red_flag_text, red_flag_style))
+        red_flag_clean = clean_and_simplify_text(red_flag_text)
+        story.append(Paragraph(red_flag_clean, red_flag_style))
 
     # Footer
     story.append(Spacer(1, 0.5*inch))

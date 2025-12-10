@@ -645,7 +645,7 @@ if 'workflow_completed' not in st.session_state:
 if 'uploaded_file' not in st.session_state:
     st.session_state.uploaded_file = None  # Hochgeladenes PDF
 if 'allowed_sources' not in st.session_state:
-    st.session_state.allowed_sources = ["crunchbase.com", "techcrunch.com", "pitchbook.com", "linkedin.com"]  # Erlaubte Quellen für Web-Recherche
+    st.session_state.allowed_sources = []  # Erlaubte Quellen für Web-Recherche
 if 'criteria_weights' not in st.session_state:
     st.session_state.criteria_weights = {key: "mittel" for key in EVALUATION_CRITERIA.keys()}  # Gewichtungen für Standard-Kriterien
 if 'additional_criteria' not in st.session_state:
@@ -755,7 +755,7 @@ def render_sources(sources: list):
         st.markdown('</div>', unsafe_allow_html=True)
 
 # Haupt-Header der Anwendung
-st.markdown('<div class="main-header">🚀 VC Pitch Deck Analysator</div>', unsafe_allow_html=True)
+st.markdown('<div class="main-header">🚀 F Technologies Pitch Deck Analysator</div>', unsafe_allow_html=True)
 
 # ===== KONFIGURATIONSSEITE =====
 # Hier kann der Nutzer ein PDF hochladen und Einstellungen vornehmen
@@ -783,7 +783,7 @@ if st.session_state.page == 'config':
 
         # Web search sources configuration
         st.markdown("### 🔍 Web-Suchquellen")
-        default_sources = ["crunchbase.com", "techcrunch.com", "pitchbook.com", "linkedin.com"]
+        default_sources = []
         sources_text = st.text_area(
             "Erlaubte Quellen (eine pro Zeile)",
             value="\n".join(st.session_state.allowed_sources),
