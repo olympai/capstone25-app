@@ -645,7 +645,7 @@ if 'workflow_completed' not in st.session_state:
 if 'uploaded_file' not in st.session_state:
     st.session_state.uploaded_file = None  # Hochgeladenes PDF
 if 'allowed_sources' not in st.session_state:
-    st.session_state.allowed_sources = ["crunchbase.com", "techcrunch.com", "pitchbook.com", "linkedin.com"]  # Erlaubte Quellen für Web-Recherche
+    st.session_state.allowed_sources = []  # Erlaubte Quellen für Web-Recherche
 if 'criteria_weights' not in st.session_state:
     st.session_state.criteria_weights = {key: "mittel" for key in EVALUATION_CRITERIA.keys()}  # Gewichtungen für Standard-Kriterien
 if 'additional_criteria' not in st.session_state:
