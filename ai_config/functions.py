@@ -8,6 +8,7 @@ Dieses Modul enthält alle wichtigen Funktionen für:
 - E-Mail-Generierung für Gründer
 """
 
+#import von packages
 import anthropic
 import base64
 from typing import Tuple

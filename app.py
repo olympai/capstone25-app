@@ -35,7 +35,7 @@ st.set_page_config(
 # Umfasst: Hintergrundanimation, Glassmorphismus-Effekte, interaktive Hover-States
 st.markdown("""
 <style>
-    /* Animated gradient background */
+    /* Animierter Gradient-Hintergrund */
     @keyframes gradientShift {
         0% { background-position: 0% 50%; }
         50% { background-position: 100% 50%; }
@@ -106,14 +106,14 @@ st.markdown("""
         }
     }
 
-    /* Main app background */
+    /* Haupt-Hintergrund der Anwendung */
     .stApp {
         background: linear-gradient(-45deg, #0f0f23, #1a1a3e, #1e1e4f, #2a2a5a);
         background-size: 400% 400%;
         animation: gradientShift 15s ease infinite;
     }
 
-    /* Main header with gradient text */
+    /* Haupt-Überschrift mit Gradient-Text */
     .main-header {
         font-size: 3rem;
         font-weight: bold;
@@ -157,7 +157,7 @@ st.markdown("""
         transform: translateX(5px);
     }
 
-    /* Animated traffic light with glow effect */
+    /* Animierte Ampel mit Leuchteffekt */
     .traffic-light {
         width: 120px;
         height: 120px;
@@ -183,7 +183,7 @@ st.markdown("""
         box-shadow: 0 0 40px rgba(220, 53, 69, 0.8), 0 8px 32px rgba(0, 0, 0, 0.3);
     }
 
-    /* Glassmorphism result cards */
+    /* Glassmorphismus-Ergebnis-Karten */
     .result-card {
         background: rgba(255, 255, 255, 0.05);
         backdrop-filter: blur(10px);
@@ -246,7 +246,7 @@ st.markdown("""
         background: linear-gradient(135deg, rgba(102, 126, 234, 0.15) 0%, rgba(118, 75, 162, 0.15) 100%);
     }
 
-    /* Enhance Streamlit components */
+    /* Verbesserungen für Streamlit-Komponenten */
     .stButton > button {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         color: white;
@@ -294,7 +294,7 @@ st.markdown("""
         transform: translateY(-2px) scale(1.03);
     }
 
-    /* File uploader styling */
+    /* Datei-Upload-Styling */
     .uploadedFile {
         background: rgba(102, 126, 234, 0.1);
         border-radius: 12px;
@@ -321,7 +321,7 @@ st.markdown("""
         filter: drop-shadow(0 0 20px rgba(102, 126, 234, 0.3));
     }
 
-    /* Text input and text area */
+    /* Texteingabefelder und Textbereiche */
     .stTextInput > div > div > input,
     .stTextArea > div > div > textarea {
         background: rgba(255, 255, 255, 0.05);
@@ -349,7 +349,7 @@ st.markdown("""
         animation: borderGlow 2s ease-in-out infinite;
     }
 
-    /* Expander styling */
+    /* Expander-Styling */
     .streamlit-expanderHeader {
         background: rgba(102, 126, 234, 0.1);
         border-radius: 12px;
@@ -366,7 +366,7 @@ st.markdown("""
         transform: translateX(5px);
     }
 
-    /* Status container */
+    /* Status-Container */
     .stStatus {
         background: rgba(255, 255, 255, 0.05);
         backdrop-filter: blur(10px);
@@ -383,7 +383,7 @@ st.markdown("""
         border-color: rgba(102, 126, 234, 0.4);
     }
 
-    /* Chat messages */
+    /* Chat-Nachrichten */
     .stChatMessage {
         background: rgba(255, 255, 255, 0.05);
         backdrop-filter: blur(10px);
@@ -404,7 +404,7 @@ st.markdown("""
         transform: translateX(5px);
     }
 
-    /* Success/Error/Warning messages */
+    /* Erfolgs-/Fehler-/Warnmeldungen */
     .stSuccess {
         border-radius: 12px;
         backdrop-filter: blur(10px);
@@ -461,7 +461,7 @@ st.markdown("""
         transform: scale(1.02);
     }
 
-    /* Divider with gradient */
+    /* Trennlinie mit Gradient */
     hr {
         background: linear-gradient(90deg, transparent, rgba(102, 126, 234, 0.5), transparent);
         height: 2px;
@@ -477,7 +477,7 @@ st.markdown("""
         height: 3px;
     }
 
-    /* Enhanced markdown headings */
+    /* Verbesserte Markdown-Überschriften */
     h3, .stMarkdown h3 {
         color: #e0e7ff;
         text-shadow: 0 0 10px rgba(102, 126, 234, 0.3);
@@ -490,7 +490,7 @@ st.markdown("""
         transform: translateX(3px);
     }
 
-    /* Column hover effects */
+    /* Spalten-Hover-Effekte */
     [data-testid="column"] {
         transition: all 0.3s ease;
         border-radius: 16px;
@@ -500,7 +500,7 @@ st.markdown("""
         background: rgba(102, 126, 234, 0.03);
     }
 
-    /* Enhanced links */
+    /* Verbesserte Links */
     a {
         color: #667eea;
         text-decoration: none;
@@ -515,7 +515,7 @@ st.markdown("""
         transform: translateX(2px);
     }
 
-    /* Scrollbar styling */
+    /* Scrollbar-Styling */
     ::-webkit-scrollbar {
         width: 12px;
         height: 12px;
@@ -538,12 +538,12 @@ st.markdown("""
                     0 0 40px rgba(102, 126, 234, 0.5);
     }
 
-    /* Smooth transitions for all elements */
+    /* Sanfte Übergänge für alle Elemente */
     * {
         transition: background-color 0.3s ease, border-color 0.3s ease;
     }
 
-    /* Source Cards Styling */
+    /* Quellen-Karten-Styling */
     .source-card {
         background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
         border: 1px solid rgba(102, 126, 234, 0.3);
@@ -781,7 +781,7 @@ if st.session_state.page == 'config':
 
         st.markdown("---")
 
-        # Web search sources configuration
+        # Konfiguration der Web-Suchquellen
         st.markdown("### 🔍 Web-Suchquellen")
         default_sources = []
         sources_text = st.text_area(
@@ -885,7 +885,7 @@ if st.session_state.page == 'config':
 
         st.markdown("---")
 
-        # Run analysis button
+        # Analyse-Start-Button
         col_btn1, col_btn2, col_btn3 = st.columns([1, 2, 1])
         with col_btn2:
             if st.session_state.uploaded_file:
@@ -1077,13 +1077,13 @@ elif st.session_state.page == 'results':
             st.success("🎉 Analyse abgeschlossen!")
             st.rerun()
 
-    # Display results if available
+    # Zeige Ergebnisse an, falls verfügbar
     if st.session_state.results:
         results = st.session_state.results
 
         st.markdown('<div class="sub-header">Analyse-Ergebnisse</div>', unsafe_allow_html=True)
 
-        # Traffic light indicator
+        # Ampel-Anzeige
         col1, col2, col3 = st.columns([1, 2, 1])
         with col2:
             color_class = results['final_prediction']
@@ -1132,11 +1132,11 @@ elif st.session_state.page == 'results':
 
         st.markdown("---")
 
-        # Summary
+        # Zusammenfassung der Analyse
         st.markdown("### 📝 Zusammenfassung")
         st.markdown(f'<div class="result-card">{results["summary"]}</div>', unsafe_allow_html=True)
 
-        # PDF Export Button
+        # PDF-Export-Button
         st.markdown("---")
         st.markdown("### 📄 Export")
 
@@ -1171,7 +1171,7 @@ elif st.session_state.page == 'results':
 
         st.markdown("---")
 
-        # Detailed reasoning in accordions
+        # Detaillierte Begründungen in Akkordeons
         st.markdown("### 🔍 Detaillierte Analyse")
 
         with st.expander("📄 Pitch Deck Analyse", expanded=False):
@@ -1180,7 +1180,7 @@ elif st.session_state.page == 'results':
             st.markdown("**Begründung:**")
             st.markdown(results['pitch_deck']['reasoning'])
 
-        # Red Flags Accordion (falls vorhanden)
+        # Red Flags-Akkordeon (falls vorhanden)
         if results.get('red_flags') and results['red_flags'].get('triggered'):
             with st.expander("🚨 K.O.-Kriterien Check", expanded=True):
                 st.markdown(f"**Status:** ❌ {len(results['red_flags']['triggered'])} Red Flag(s) getroffen")
@@ -1202,17 +1202,17 @@ elif st.session_state.page == 'results':
             if results['web_research']['sources']:
                 render_sources(results['web_research']['sources'])
 
-        # Email Generation Section
+        # E-Mail-Generierungsbereich
         st.markdown("---")
         st.markdown('<div class="sub-header">E-Mail-Antwort generieren</div>', unsafe_allow_html=True)
 
-        # Initialize email state if not exists
+        # Initialisiere E-Mail-Status, falls nicht vorhanden
         if 'generated_email' not in st.session_state:
             st.session_state.generated_email = None
 
         col_email1, col_email2, col_email3 = st.columns([1, 2, 1])
         with col_email2:
-            # Determine email type
+            # Bestimme E-Mail-Typ (Einladung oder Absage)
             email_type = "invitation" if results['final_prediction'] == 'green' else "rejection"
             email_icon = "✅" if email_type == "invitation" else "📧"
             email_type_de = "Einladung" if email_type == "invitation" else "Absage"
@@ -1221,7 +1221,7 @@ elif st.session_state.page == 'results':
 
             if st.button("📝 E-Mail generieren", type="primary", use_container_width=True):
                 with st.spinner("Personalisierte E-Mail wird generiert..."):
-                    # Extract startup name from filename (remove .pdf extension)
+                    # Extrahiere Startup-Namen aus Dateinamen (entferne .pdf-Endung)
                     startup_name = results['filename'].replace('.pdf', '').replace('_', ' ').replace('-', ' ').title()
 
                     success, subject, body = generate_email(
@@ -1242,7 +1242,7 @@ elif st.session_state.page == 'results':
                         st.success("✅ E-Mail erfolgreich generiert!")
                         st.rerun()
 
-        # Display generated email if available
+        # Zeige generierte E-Mail an, falls verfügbar
         if st.session_state.generated_email:
             st.markdown("### 📧 Generierte E-Mail")
             email_data = st.session_state.generated_email
@@ -1253,10 +1253,10 @@ elif st.session_state.page == 'results':
                 st.markdown(email_data['body'])
                 st.markdown('</div>', unsafe_allow_html=True)
 
-            # Create mailto link
+            # Erstelle mailto-Link
             col_mail1, col_mail2, col_mail3 = st.columns([1, 2, 1])
             with col_mail2:
-                # URL encode the subject and body
+                # URL-kodiere Betreff und Text
                 encoded_subject = urllib.parse.quote(email_data['subject'])
                 encoded_body = urllib.parse.quote(email_data['body'])
                 mailto_link = f"mailto:?subject={encoded_subject}&body={encoded_body}"
@@ -1329,17 +1329,17 @@ elif st.session_state.page == 'results':
             # Generiere Antwort mit Claude
             with st.chat_message("assistant"):
                 with st.spinner("Denke nach..."):
-                    # Load and encode the PDF
+                    # Lade und kodiere das PDF
                     import base64
                     tmp_path = Path("tmp") / results['filename']
                     with open(tmp_path, 'rb') as f:
                         pdf_data = base64.standard_b64encode(f.read()).decode("utf-8")
 
-                    # Build messages with PDF in the first message
+                    # Erstelle Nachrichten mit PDF in der ersten Nachricht
                     chat_messages = []
                     for i, msg in enumerate(st.session_state.chat_history):
                         if i == 0:
-                            # First message includes the PDF
+                            # Erste Nachricht enthält das PDF
                             chat_messages.append({
                                 "role": msg["role"],
                                 "content": [
@@ -1376,14 +1376,14 @@ elif st.session_state.page == 'results':
                         ]
                     )
 
-                    # Extract text from response and sources
+                    # Extrahiere Text aus Antwort und Quellen
                     assistant_message = ""
                     chat_sources = []
 
                     for content in response.content:
                         if content.type == "text":
                             assistant_message += content.text
-                            # Extract citations if available
+                            # Extrahiere Zitate, falls verfügbar
                             if hasattr(content, 'citations') and content.citations:
                                 for citation in content.citations:
                                     if hasattr(citation, 'url'):
@@ -1392,16 +1392,16 @@ elif st.session_state.page == 'results':
                                             'title': getattr(citation, 'title', citation.url)
                                         })
 
-                    # Add sources to message if any
+                    # Füge Quellen zur Nachricht hinzu, falls vorhanden
                     if chat_sources:
                         assistant_message += "\n\n**Quellen:**\n"
                         for i, source in enumerate(chat_sources, 1):
                             assistant_message += f"{i}. [{source['title']}]({source['url']})\n"
 
-                # Display assistant message
+                # Zeige Assistenten-Nachricht an
                 st.markdown(assistant_message)
 
-                # Add assistant message to chat history
+                # Füge Assistenten-Nachricht zum Chat-Verlauf hinzu
                 st.session_state.chat_history.append({
                     "role": "assistant",
                     "content": assistant_message
