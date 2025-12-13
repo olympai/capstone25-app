@@ -1,165 +1,359 @@
 # VC Pitch Deck Analyzer
 
-## TO START RUN: ./run.sh
+## 🚀 Schnellstart
 
-An AI-powered Streamlit application for analyzing startup pitch decks using Claude AI. The application performs comprehensive evaluations combining pitch deck analysis with web research to provide investment insights.
+```bash
+./run.sh
+```
 
-## Features
+Eine KI-gestützte Streamlit-Anwendung zur Analyse von Startup Pitch Decks mit Claude AI. Die Anwendung führt umfassende Bewertungen durch, kombiniert Pitch Deck Analyse mit Web-Recherche, Wettbewerber-Screening und Markt-Trends-Analyse, um fundierte Investment-Entscheidungen zu treffen.
 
-- **PDF Upload**: Upload startup pitch decks in PDF format
-- **AI-Powered Analysis**: Leverages Claude AI to evaluate pitch decks across multiple dimensions:
-  - Company & Business Model
-  - Competition & Market Position
-  - Financials & Metrics
-  - Market Size & Dynamics
-  - Product & Technology
+## ✨ Features
+
+### Kern-Funktionalität
+- **PDF-Upload**: Lade Startup Pitch Decks im PDF-Format hoch
+- **KI-gestützte Analyse**: Nutzt Claude AI zur Bewertung über mehrere Dimensionen:
+  - Unternehmen & Geschäftsmodell
+  - Wettbewerb & Marktposition
+  - Finanzen & Metriken
+  - Marktgröße & Dynamik
+  - Produkt & Technologie
   - Team & Expertise
-- **Web Research**: Automatically researches missing information using web search
-- **Traffic Light Scoring**: Visual red/yellow/green indicator for quick assessment
-- **Detailed Reports**: Comprehensive reasoning for both pitch deck and web research analyses
-- **Interactive Chat**: Chat interface to ask questions about the analysis results
-- **Customizable Criteria**: Add additional evaluation criteria to the analysis
-- **Source Configuration**: Specify preferred web sources for research
 
-## Installation
+### Erweiterte Analyse-Features
+- **Kriterien-Gewichtung**: Passe die Wichtigkeit einzelner Bewertungskriterien an (niedrig/mittel/hoch)
+- **Eigene Kriterien**: Füge spezifische Bewertungskriterien für deine Investment-These hinzu
+- **Red Flags**: Definiere K.O.-Kriterien, die automatisch zu einer roten Ampel führen
+- **Wettbewerber-Screening**: Automatische Identifikation und Analyse von Wettbewerbern
+- **Markt-Trends-Analyse**: Recherche aktueller Marktentwicklungen und Branchentrends
+- **Web-Recherche**: Automatische Suche nach fehlenden Informationen mit konfigurierbaren Quellen
 
-1. Clone the repository:
+### Ausgabe & Kommunikation
+- **Ampel-Bewertung**: Visueller grün/gelb/rot-Indikator für schnelle Einschätzung
+- **Executive Summary**: Exportiere professionelle PDF-Zusammenfassungen
+- **E-Mail-Generierung**: Automatische Erstellung personalisierter Einladungs- oder Absage-E-Mails
+- **Interaktiver Chat**: Stelle Fragen zu den Analyse-Ergebnissen mit Web-Suche-Integration
+- **Detaillierte Reports**: Umfassende Begründungen für alle Analyse-Schritte mit Quellenangaben
+
+## 📋 Voraussetzungen
+
+- Python 3.9+
+- Azure OpenAI Account mit Claude-Zugriff (via Anthropic Foundry)
+- Internetverbindung für Web-Recherche-Funktionalität
+
+## ⚙️ Installation & Konfiguration
+
+### 1. Repository klonen
 ```bash
 git clone <repository-url>
 cd capstone25-app
 ```
 
-2. Create a virtual environment (recommended):
+### 2. Virtual Environment erstellen
 ```bash
 python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+source venv/bin/activate  # Auf Windows: venv\Scripts\activate
 ```
 
-3. Install dependencies:
+### 3. Azure API-Konfiguration (WICHTIG!)
+Bevor du die Anwendung starten kannst, musst du deine Azure OpenAI API-Zugangsdaten konfigurieren:
+
+1. Öffne die Datei `.env` im Projekt-Root
+2. Trage deine Azure-Zugangsdaten ein:
+
+```env
+API_KEY=DEIN_AZURE_API_KEY
+API_ENDPOINT=https://DEINE_RESOURCE.openai.azure.com/anthropic
+```
+
+**So erhältst du die Zugangsdaten:**
+- Logge dich in dein [Azure Portal](https://portal.azure.com) ein
+- Navigiere zu deiner Azure OpenAI Ressource
+- Kopiere den **API Key** unter "Keys and Endpoint"
+- Kopiere den **Endpoint** (sollte mit `https://` beginnen und auf `/anthropic` enden)
+
+### 4. Anwendung starten
+Nutze das mitgelieferte Start-Script:
 ```bash
-pip install -r requirements.txt
+./run.sh
 ```
 
-4. Set up environment variables:
-Create a `.env` file in the project root with:
-```
-API_KEY=your_anthropic_api_key
-API_ENDPOINT=your_api_endpoint
-```
+Das Script führt automatisch folgende Schritte aus:
+- Aktiviert die Virtual Environment
+- Installiert alle Dependencies aus `requirements.txt`
+- Prüft ob die `.env` Datei vorhanden ist
+- Lädt die Umgebungsvariablen
+- Startet die Streamlit-Anwendung
 
-## Usage
+Die App öffnet sich automatisch in deinem Browser unter `http://localhost:8501`
 
-1. Start the Streamlit application:
-```bash
-streamlit run app.py
-```
+## 🎯 Nutzung
 
-2. Open your browser and navigate to `http://localhost:8501`
+### 1. Konfiguration
 
-3. Configure the analysis:
-   - Upload a pitch deck PDF
-   - Customize web search sources (optional)
-   - Add additional evaluation criteria (optional)
+#### Pitch Deck hochladen
+- Lade eine PDF-Datei deines Startup Pitch Decks hoch
 
-4. Run the analysis:
-   - Click "Run Analysis"
-   - Wait for the workflow to complete (pitch deck analysis → web research → summary)
+#### Kriterien-Gewichtung anpassen
+- Passe die Wichtigkeit der Standard-Kriterien an:
+  - **Niedrig**: Geringere Gewichtung in der Gesamtbewertung
+  - **Mittel**: Standard-Gewichtung (Default)
+  - **Hoch**: Höchste Priorität - kritisch für Investment-Entscheidung
 
-5. Review results:
-   - Check the traffic light indicator for overall assessment
-   - Read the executive summary
-   - Expand accordions for detailed reasoning
-   - Use the chat interface to ask questions
+#### Eigene Kriterien hinzufügen (Optional)
+- Klicke auf "➕ Neues Kriterium hinzufügen"
+- Wähle die Gewichtung (niedrig/mittel/hoch)
+- Beschreibe das Kriterium (z.B. "Nachhaltigkeit der Lösung", "Social Impact")
 
-## Project Structure
+#### Red Flags definieren (Optional)
+- Definiere K.O.-Kriterien, die automatisch zu einer roten Ampel führen
+- Ein Red Flag pro Zeile (z.B. "Keine zahlenden Kunden", "Regulatorische Probleme")
+
+#### Web-Suchquellen konfigurieren (Optional)
+- Gib bevorzugte Webseiten für die Recherche an (eine pro Zeile)
+- Beispiele: `crunchbase.com`, `techcrunch.com`, `pitchbook.com`, `linkedin.com`
+
+### 2. Analyse durchführen
+
+Klicke auf **"🚀 Analyse starten"**. Die App führt folgende Schritte automatisch aus:
+
+1. **📊 Pitch Deck Analyse**: Detaillierte Bewertung des PDFs anhand gewichteter Kriterien
+2. **🔍 Wettbewerber-Screening**: Identifikation und Analyse von Wettbewerbern
+3. **🌐 Web-Recherche & Markt-Trends**: Suche nach fehlenden Informationen und aktuellen Markttrends
+4. **🚨 Red Flag Check**: Überprüfung der K.O.-Kriterien
+5. **📝 Zusammenfassung**: Generierung einer Executive Summary
+
+### 3. Ergebnisse auswerten
+
+#### Ampel-Bewertung
+- **🟢 Grün**: Beide Analysen prognostizieren Erfolg
+- **🟡 Gelb**: Gemischte Prognosen - weitere Untersuchung empfohlen
+- **🔴 Rot**: Negative Prognosen oder Red Flags getroffen
+
+#### Detaillierte Analysen
+Erweitere die Accordions für detaillierte Einblicke:
+- Pitch Deck Analyse mit Begründung
+- K.O.-Kriterien Check (falls Red Flags definiert)
+- Wettbewerber-Screening mit Quellen
+- Web-Recherche & Markt-Trends mit Quellen
+
+#### PDF-Export
+- Klicke auf **"📄 Executive Summary als PDF exportieren"**
+- Erhalte eine professionelle PDF-Zusammenfassung mit allen wichtigen Ergebnissen
+
+### 4. E-Mail generieren
+
+- Klicke auf **"📝 E-Mail generieren"**
+- Die App erstellt automatisch eine personalisierte E-Mail:
+  - **Einladung** bei positiver Bewertung (grün)
+  - **Absage** bei negativer/gemischter Bewertung (gelb/rot)
+- Öffne die E-Mail direkt in deinem E-Mail-Programm mit einem Klick
+
+### 5. Interaktiver Chat
+
+- Stelle Fragen zu den Analyse-Ergebnissen
+- Der Chat hat Zugriff auf:
+  - Das ursprüngliche PDF
+  - Alle Analyse-Ergebnisse
+  - Web-Suche für zusätzliche Recherchen
+- Beispiel-Fragen:
+  - "Was sind die größten Risiken für dieses Startup?"
+  - "Wie sieht die Wettbewerbslandschaft aus?"
+  - "Welche Markt-Trends sprechen für/gegen dieses Investment?"
+
+
+## 📁 Projektstruktur
 
 ```
 capstone25-app/
-├── app.py                 # Main Streamlit application
+├── app.py                      # Hauptanwendung (Streamlit UI)
+├── run.sh                      # Start-Script für die Anwendung
+├── .env                        # Umgebungsvariablen (API-Konfiguration)
+├── requirements.txt            # Python-Dependencies
 ├── ai_config/
-│   ├── config.py          # API configuration and evaluation instructions
-│   └── functions.py       # Core AI functions (prediction, web search, summary)
-├── tmp/                   # Temporary directory for uploaded files
-├── requirements.txt       # Python dependencies
-├── .env                   # Environment variables (not in version control)
-└── README.md             # This file
+│   ├── config.py              # API-Konfiguration & Bewertungskriterien
+│   ├── functions.py           # KI-Funktionen (Analyse, Web-Suche, E-Mails)
+│   ├── pdf_export.py          # PDF-Export-Funktionalität
+│   └── workflow.py            # Workflow-Orchestrierung
+├── tmp/                        # Temporäres Verzeichnis für hochgeladene PDFs
+└── README.md                   # Diese Datei
 ```
 
-## How It Works
+## 🔧 Funktionsweise
 
-### 1. Pitch Deck Analysis
-The application uses Claude AI with a structured evaluation framework to analyze:
-- Company location, stage, and business model
-- Competitive positioning and differentiation
-- Financial metrics and traction
-- Market size and growth potential
-- Product roadmap and technical feasibility
-- Team experience and capabilities
+### 1. Pitch Deck Analyse
+Die Anwendung nutzt Claude AI mit einem strukturierten Bewertungsrahmen:
+- **Gewichtete Kriterien**: Nutzer-definierte Gewichtung der Standard-Kriterien
+- **Eigene Kriterien**: Zusätzliche Investment-spezifische Bewertungsdimensionen
+- **Strukturierte Bewertung**: Analyse von Unternehmen, Wettbewerb, Finanzen, Markt, Produkt und Team
+- **Identifikation von Lücken**: Erkennung fehlender Informationen für Web-Recherche
 
-### 2. Web Research
-Based on missing information identified in the pitch deck, the system:
-- Conducts targeted web searches
-- Focuses on specified sources (Crunchbase, TechCrunch, etc.)
-- Gathers additional context about the market and team
+### 2. Wettbewerber-Screening
+Automatische Wettbewerbsanalyse:
+- Identifikation direkter und indirekter Wettbewerber
+- Analyse von Marktpositionierung und Differenzierung
+- Bewertung der Wettbewerbslandschaft
+- Quellenangaben für weitere Recherchen
 
-### 3. Summary Generation
-Combines insights from both analyses to provide:
-- Comprehensive executive summary
-- Overall assessment (green/yellow/red)
-- Detailed reasoning from both sources
+### 3. Web-Recherche & Markt-Trends
+Intelligente Informationsbeschaffung:
+- Gezielte Suche nach fehlenden Informationen
+- Analyse aktueller Markttrends und Branchenentwicklungen
+- Fokus auf konfigurierbare Quellen (Crunchbase, TechCrunch, etc.)
+- Sammlung zusätzlicher Kontextinformationen über Markt und Team
 
-### 4. Interactive Q&A
-Chat interface allows you to:
-- Ask questions about specific aspects of the analysis
-- Explore implications of the findings
-- Get clarification on recommendations
+### 4. Red Flag Check
+Automatische Überprüfung von K.O.-Kriterien:
+- Analyse aller Ergebnisse gegen definierte Red Flags
+- Automatische Bewertungsanpassung bei getroffenen Red Flags
+- Detaillierte Begründung für jedes getriggerte Kriterium
 
-## Configuration
+### 5. Zusammenfassung & Bewertung
+Intelligente Ergebnis-Aggregation:
+- Kombination aller Analyse-Ergebnisse
+- Executive Summary mit Gesamtbewertung
+- Ampel-System (grün/gelb/rot) basierend auf allen Faktoren
+- Detaillierte Begründungen aus allen Quellen
 
-### Evaluation Criteria
-The default evaluation framework covers:
-- **Company**: Location, stage, business model
-- **Competition**: Market positioning, differentiation
-- **Financials**: KPIs, traction, valuation, cap table
-- **Market**: TAM/SAM/SOM, growth dynamics, barriers to entry
-- **Product**: Roadmap, product-market fit, UX
-- **Team**: Experience, skills, network
-- **Technology**: Defensibility, complexity, tech stack
+### 6. E-Mail-Generierung
+Automatisierte Kommunikation:
+- **Einladungs-E-Mails** bei positiver Bewertung (grün)
+- **Absage-E-Mails** bei negativer/gemischter Bewertung (gelb/rot)
+- Personalisierung basierend auf Analyse-Ergebnissen
+- Professioneller Ton mit konstruktivem Feedback
 
-### Web Search Sources
-Default sources include:
-- crunchbase.com
-- techcrunch.com
-- pitchbook.com
-- linkedin.com
+### 7. Interaktive Nachbearbeitung
+Chat-Interface mit erweiterten Funktionen:
+- Zugriff auf das ursprüngliche PDF
+- Zugriff auf alle Analyse-Ergebnisse
+- Integrierte Web-Suche für zusätzliche Recherchen
+- Kontextbewusste Antworten basierend auf allen verfügbaren Daten
 
-You can customize these in the sidebar.
+## ⚙️ Konfigurationsoptionen
 
-## Traffic Light Scoring
+### Bewertungskriterien
+Das Standard-Framework umfasst:
+- **Unternehmen** (COMPANY): Standort, Entwicklungsstand, Geschäftsmodell
+- **Wettbewerb** (COMPETITION): Marktpositionierung, Differenzierung, Proof Points
+- **Finanzen** (FINANCIALS): KPIs, Traction, Bewertung, Cap Table, Investoren
+- **Markt** (MARKET): TAM/SAM/SOM, Wachstumsdynamik, Markteintrittsbarrieren
+- **Produkt** (PRODUCT): Roadmap, Product-Market-Fit, UX, Profitabilität
+- **Team** (TEAM): Bildung, Erfahrung, Skills, Netzwerk, Gründerhistorie
 
-- **🟢 Green**: Both pitch deck and web research predict success
-- **🟡 Yellow**: Mixed predictions (further investigation recommended)
-- **🔴 Red**: Both analyses predict failure
+Alle Kriterien können in drei Gewichtungen konfiguriert werden:
+- **Niedrig**: Geringere Bedeutung in der Gesamtbewertung
+- **Mittel**: Standard-Gewichtung (Default)
+- **Hoch**: Kritisch für Investment-Entscheidung
 
-## Requirements
+### Eigene Kriterien
+Zusätzliche Bewertungsdimensionen können frei definiert werden:
+- **Gewichtung**: niedrig/mittel/hoch
+- **Beschreibung**: Freitext zur Definition des Kriteriums
+- Beispiele: "Nachhaltigkeit", "Social Impact", "Regulatorisches Risiko"
 
-- Python 3.9+
-- Anthropic API key with Claude access
-- Internet connection for web search functionality
+### Red Flags (K.O.-Kriterien)
+Definiere Ausschlusskriterien, die automatisch zu einer roten Ampel führen:
+- Ein Kriterium pro Zeile
+- Beispiele:
+  - "Keine zahlenden Kunden trotz 2+ Jahren Marktpräsenz"
+  - "Founder hat bereits das Unternehmen verlassen"
+  - "Schwerwiegende regulatorische Probleme"
+  - "Unrealistische Bewertung (>10x branchenüblich)"
 
-## Troubleshooting
+### Web-Suchquellen
+Konfigurierbare Quellen für Web-Recherche:
+- **Standard-Quellen**: crunchbase.com, techcrunch.com, pitchbook.com, linkedin.com
+- **Anpassbar**: Beliebige Domains können hinzugefügt werden
+- Eine Quelle pro Zeile
 
-**Issue**: "Error analyzing pitch deck"
-- Check that your API key is valid
-- Ensure the PDF is readable and not corrupted
-- Verify your API endpoint is correct
+## 🚦 Ampel-Bewertungssystem
 
-**Issue**: "Error during web research"
-- Check internet connectivity
-- Verify web search is enabled for your API key
-- Try with default sources first
+Die finale Bewertung basiert auf mehreren Faktoren:
 
-**Issue**: Streamlit won't start
-- Ensure all dependencies are installed: `pip install -r requirements.txt`
-- Check Python version: `python --version` (should be 3.9+)
-- Try clearing Streamlit cache: `streamlit cache clear`
+### 🟢 Grün (Empfehlung: Einladen)
+- Pitch Deck Analyse prognostiziert Erfolg
+- Web-Recherche bestätigt positives Bild
+- Keine Red Flags getroffen
+- Starke Markt-Trends unterstützen das Geschäftsmodell
+
+### 🟡 Gelb (Empfehlung: Weitere Untersuchung)
+- Gemischte Prognosen zwischen Analysen
+- Einige Bedenken, aber keine K.O.-Kriterien
+- Weitere Due Diligence empfohlen
+
+### 🔴 Rot (Empfehlung: Absagen)
+- Beide Analysen prognostizieren Misserfolg ODER
+- Mindestens ein Red Flag wurde getroffen
+- Signifikante Risiken oder fehlende Grundvoraussetzungen
+
+**Wichtig**: Ein einzelner getroffener Red Flag setzt die Bewertung automatisch auf ROT, unabhängig von anderen Faktoren.
+
+## 🐛 Troubleshooting
+
+### "Error analyzing pitch deck"
+**Mögliche Ursachen:**
+- Azure API Key ist ungültig oder abgelaufen
+- PDF ist beschädigt oder nicht lesbar
+- API Endpoint ist falsch konfiguriert
+
+**Lösungen:**
+1. Überprüfe `.env` Datei auf korrekte Zugangsdaten
+2. Teste PDF mit anderem PDF-Reader
+3. Verifiziere Endpoint-Format: `https://RESOURCE.openai.azure.com/anthropic`
+
+### ".env file not found"
+**Problem**: Das run.sh Script findet keine `.env` Datei
+
+**Lösung:**
+1. Erstelle `.env` Datei im Projekt-Root
+2. Füge API_KEY und API_ENDPOINT hinzu (siehe Installation Schritt 3)
+
+### "Error during web research"
+**Mögliche Ursachen:**
+- Keine Internetverbindung
+- Web-Suche ist für deinen API-Key nicht aktiviert
+- Quellen sind nicht erreichbar
+
+**Lösungen:**
+1. Prüfe Internetverbindung
+2. Kontaktiere Azure Support zur Aktivierung der Web-Suche
+3. Versuche es zunächst ohne eigene Quellen (leer lassen)
+
+### "Streamlit won't start"
+**Mögliche Ursachen:**
+- Dependencies nicht installiert
+- Falsche Python-Version
+- Port 8501 bereits belegt
+
+**Lösungen:**
+```bash
+# Dependencies neu installieren
+pip install -r requirements.txt
+
+# Python-Version prüfen (sollte 3.9+ sein)
+python --version
+
+# Streamlit-Cache löschen
+streamlit cache clear
+
+# Anderen Port verwenden
+streamlit run app.py --server.port 8502
+```
+
+### "Red Flags werden nicht erkannt"
+**Problem**: Red Flag Check findet keine getroffenen Kriterien
+
+**Mögliche Ursachen:**
+- Red Flags zu spezifisch formuliert
+- Informationen im Pitch Deck nicht ausreichend
+
+**Lösung:**
+1. Formuliere Red Flags allgemeiner (z.B. "Keine Kunden" statt "Weniger als 100 zahlende Kunden")
+2. Prüfe ob relevante Informationen im Pitch Deck vorhanden sind
+
+## 📞 Support & Feedback
+
+Bei Problemen oder Verbesserungsvorschlägen:
+- Erstelle ein Issue im GitHub Repository
+- Kontaktiere das Entwicklungsteam
+- Prüfe die Dokumentation auf Updates
