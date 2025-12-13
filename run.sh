@@ -6,6 +6,8 @@ echo "Starting VC Pitch Deck Analyzer..."
 # Activate virtual environment
 source venv/bin/activate
 
+pip install -r requirements.txt
+
 # Check if .env file exists
 if [ ! -f .env ]; then
     echo "Warning: .env file not found!"
