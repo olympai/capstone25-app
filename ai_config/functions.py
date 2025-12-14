@@ -8,6 +8,7 @@ Dieses Modul enthält alle wichtigen Funktionen für:
 - E-Mail-Generierung für Gründer
 """
 
+#import von packages
 import anthropic
 import base64
 from typing import Tuple
@@ -239,7 +240,7 @@ Nach deiner umfassenden Recherche nutze das evaluation Tool, um deine Vorhersage
                             }
                             sources.append(source_info)
 
-        # Entferne doppelte URLs
+        # Entferne doppelte URLs (Vermeidung von Darstellungsfehler)
         seen_urls = set()
         unique_sources = []
         for source in sources:
@@ -404,6 +405,8 @@ BODY: [E-Mail-Text]
     except Exception as e:
         print(f"Error generating email: {e}")
         return False, "Follow-up", f"Error generating email: {str(e)}"
+
+
 
 def do_competitor_analysis(client: anthropic.Anthropic = client, model: str = model, startup_info: str = "", allowed_sources: list = []):
     """
@@ -573,6 +576,8 @@ Nach deiner Recherche nutze das competitor_analysis Tool auf Deutsch, um struktu
         import traceback
         traceback.print_exc()
         return False, f"Error: {str(e)}", []
+    
+    
 
 def check_red_flags(client: anthropic.Anthropic = client, model: str = model, pitch_deck_analysis: str = "", web_research_analysis: str = "", competitor_analysis: str = "", red_flags_list: list = []):
     """

@@ -8,6 +8,7 @@ Diese Datei enthält alle wichtigen Konfigurationseinstellungen wie:
 - Bewertungsanweisungen für die KI
 """
 
+#importieren von packages
 import os
 from anthropic import AnthropicFoundry
 from dotenv import load_dotenv
@@ -16,11 +17,11 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Anthropic API Konfiguration
-# API-Schlüssel und Endpunkt werden aus den Umgebungsvariablen geladen
+# API-Schlüssel und API-Endpunkt werden aus den Umgebungsvariablen geladen
 API_KEY = os.environ.get("API_KEY", "")
 API_ENDPOINT = os.environ.get("API_ENDPOINT", "")
 
-# Initialisiere den Anthropic Client mit API-Schlüssel und Endpunkt
+# Initialisiere den Anthropic Client mit dem geladenen API-Schlüssel und Endpunkt
 client = AnthropicFoundry(
     api_key=API_KEY,
     base_url=API_ENDPOINT
@@ -30,11 +31,11 @@ client = AnthropicFoundry(
 pitch_deck_dir = "./pitch_decks/"
 
 # Claude Modell für die Bewertung
-# claude-haiku-4-5 ist ein schnelles und kostengünstiges Modell
+# claude-haiku-4-5 hat sich als bestes Modell im Testprozess herausgestellt (siehe Report)
 model = "claude-haiku-4-5"
 
 # Bewertungskriterien als strukturierte Daten
-# Diese Kategorien können vom Nutzer gewichtet werden
+# Diese Kategorien können später vom Nutzer gewichtet werden
 EVALUATION_CRITERIA = {
     "COMPANY": """location and geographical relevance (in which country/region the startup operates and how strategic
 this market is); company age and stage of development (maturity of product, customers, organization); clarity of
@@ -74,6 +75,7 @@ dynamics and collaboration; leadership experience of the founding team; depth of
 strength and relevance of the professional network; founder stability and retention risk over the long term."""
 }
 
+#Definition einer Funktion um Gewichtungen zu vergeben
 def build_instruction_with_weights(criteria_weights: dict = None, additional_criteria: list = None):
     """
     Erstellt die Bewertungsanweisung mit gewichteten Kriterien.
@@ -85,7 +87,7 @@ def build_instruction_with_weights(criteria_weights: dict = None, additional_cri
     Returns:
         str: Vollständige Bewertungsanweisung mit Gewichtungen
     """
-    # Standard-Gewichtung falls keine angegeben
+    # Standard-Gewichtung falls keine angegeben (immer Mittel)
     if criteria_weights is None:
         criteria_weights = {key: "mittel" for key in EVALUATION_CRITERIA.keys()}
 
@@ -110,7 +112,7 @@ BEWERTUNGSRAHMEN:
 
         instruction_parts.append(f"{category} [{weight_instruction}]: {description}\n")
 
-    # Füge zusätzliche Kriterien hinzu
+    # Füge zusätzliche Kriterien hinzu. Nutzer kann diese selbst bestimmen. 
     if additional_criteria:
         instruction_parts.append("\nZUSÄTZLICHE BENUTZERDEFINIERTE KRITERIEN:\n")
         for criterion in additional_criteria:

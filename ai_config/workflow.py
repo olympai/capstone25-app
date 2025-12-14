@@ -32,13 +32,13 @@ def start_workflow(file_name: str = "", allowed_sources: list = []):
     """
     alert = {}
 
-    # Schritt 1: Pitch Deck Analyse (PDA)
+    # Schritt 1: Pitch Deck Analyse 
     success_1, prediction_1, reasoning_1, missing = get_prediction(pdf_filename=file_name)
     if not success_1:
         alert = {"error": reasoning_1}
         return alert
 
-    # Schritt 2: Web-Recherche für fehlende Informationen
+    # Schritt 2: Web-Recherche für fehlende oder zusätzliche Informationen (Beispielsweise falls keine Competitors im Pitchdeck genannt werden --> Identifikation als "missing" --> WebSearch)
     success_2, prediction_2, reasoning_2, sources = do_websearch(missing=missing, allowed_sources=allowed_sources)
     if not success_2:
         alert = {"error": reasoning_2}
@@ -55,7 +55,3 @@ def start_workflow(file_name: str = "", allowed_sources: list = []):
         return alert
 
     return final_prediction, final_result, (prediction_1, reasoning_1), (prediction_2, reasoning_2, sources)
-
-# Beispiel-Aufruf für Tests
-if __name__ == "__main__":
-    start_workflow("yoolox.pdf")
