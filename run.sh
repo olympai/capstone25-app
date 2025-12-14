@@ -4,9 +4,10 @@
 echo "Starting VC Pitch Deck Analyzer..."
 
 # Activate virtual environment
+python3 -m venv venv
 source venv/bin/activate
 
-pip install -r requirements.txt
+python3 -m pip install -r requirements.txt
 
 # Check if .env file exists
 if [ ! -f .env ]; then
