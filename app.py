@@ -725,6 +725,9 @@ def render_sources(sources: list):
             # Extrahiere Domain für Favicon
             domain = url.split('/')[2] if len(url.split('/')) > 2 else url
 
+            # Icon basierend auf Domain
+            icon = "📰"
+
             card_html = f"""
             <a href="{url}" target="_blank" class="source-card">
                 <div class="source-icon">
