@@ -168,3 +168,6 @@ run.sh                      # Start Script
 ## License
 
 License not specified. Contact repository maintainer for licensing information and usage rights.
+
+## Use of AI
+Claude by Anthropic was used to support bug fixing and testing throughout the development process.
