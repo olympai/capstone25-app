@@ -6,6 +6,7 @@ Diese Anwendung analysiert Startup Pitch Decks mit KI-Unterstützung:
 - Web-Recherche für zusätzliche Informationen
 - Ampel-Bewertungssystem (grün/gelb/rot)
 - Automatische E-Mail-Generierung für Gründer
+- Automatischer Erstellen einer Summary-PDF
 - Interaktiver Chat mit den Analyse-Ergebnissen
 
 Technologien:
@@ -31,8 +32,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Custom CSS für modernes Design mit Animationen und Farbverläufen
-# Umfasst: Hintergrundanimation, Glassmorphismus-Effekte, interaktive Hover-States
+# Custom CSS Styling für Hintergrundanimation, Glassmorphismus-Effekte, interaktive Hover-States
 st.markdown("""
 <style>
     /* Animierter Gradient-Hintergrund */
@@ -58,7 +58,7 @@ st.markdown("""
     }
 
     @keyframes glow {
-        0%, 100% { box-shadow: 0 0 20px rgba(102, 126, 234, 0.5), 0 0 40px rgba(102, 126, 234, 0.3); }
+        0%, 100% { box-shadow: 0 0 20px rgba(102, 126, 234, 0.5), 0 0 40px rgba(102, 126, 234, 0.3); } 
         50% { box-shadow: 0 0 30px rgba(102, 126, 234, 0.7), 0 0 60px rgba(102, 126, 234, 0.5); }
     }
 
@@ -633,7 +633,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # Initialisiere Session State Variablen
-# Session State ermöglicht das Speichern von Daten zwischen Seitenaufrufen
+# Session State ermöglicht das Speichern von Daten zwischen Seitenaufrufen, ohne Datenbank oder komplexe Client-Server Architektur
 if 'page' not in st.session_state:
     st.session_state.page = 'config'  # Aktuelle Seite: 'config' (Konfiguration) oder 'results' (Ergebnisse)
 if 'results' not in st.session_state:
@@ -643,7 +643,7 @@ if 'chat_history' not in st.session_state:
 if 'workflow_completed' not in st.session_state:
     st.session_state.workflow_completed = False  # Flag ob Analyse abgeschlossen
 if 'uploaded_file' not in st.session_state:
-    st.session_state.uploaded_file = None  # Hochgeladenes PDF
+    st.session_state.uploaded_file = None  # Hochgeladenes PDF (Pitchdeck)
 if 'allowed_sources' not in st.session_state:
     st.session_state.allowed_sources = []  # Erlaubte Quellen für Web-Recherche
 if 'criteria_weights' not in st.session_state:
@@ -653,7 +653,7 @@ if 'additional_criteria' not in st.session_state:
 if 'red_flags' not in st.session_state:
     st.session_state.red_flags = ""  # Red Flags die automatisch zur roten Ampel führen
 
-# Hilfsfunktion zum Rendern von Quellen als Cards
+# Hilfsfunktion zum Rendern von Quellen als Cards (bessere Darstellung)
 def render_sources(sources: list):
     """
     Rendert Quellen als schöne Cards mit separater Darstellung von LinkedIn-Links.
@@ -683,7 +683,7 @@ def render_sources(sources: list):
             else:
                 other_sources.append({'url': source, 'title': source})
 
-    # Rendere LinkedIn-Quellen (Founders/Team)
+    # Rendere LinkedIn-Quellen (Founders)
     if linkedin_sources:
         st.markdown('<div class="sources-section">', unsafe_allow_html=True)
         st.markdown('<div class="sources-subtitle">👥 Team & Founder Profile</div>', unsafe_allow_html=True)
@@ -713,7 +713,7 @@ def render_sources(sources: list):
 
         st.markdown('</div>', unsafe_allow_html=True)
 
-    # Rendere andere Quellen
+    # Rendere übrige Quellen
     if other_sources:
         st.markdown('<div class="sources-section">', unsafe_allow_html=True)
         st.markdown('<div class="sources-subtitle">🔗 Weitere Quellen</div>', unsafe_allow_html=True)
@@ -724,17 +724,6 @@ def render_sources(sources: list):
 
             # Extrahiere Domain für Favicon
             domain = url.split('/')[2] if len(url.split('/')) > 2 else url
-
-            # Icon basierend auf Domain
-            icon = "📰"
-            if 'crunchbase' in domain.lower():
-                icon = "💼"
-            elif 'techcrunch' in domain.lower():
-                icon = "📱"
-            elif 'pitchbook' in domain.lower():
-                icon = "📊"
-            elif 'github' in domain.lower():
-                icon = "💻"
 
             card_html = f"""
             <a href="{url}" target="_blank" class="source-card">
@@ -762,7 +751,7 @@ st.markdown('<div class="main-header">🚀 F Technologies Pitch Deck Analysator<
 if st.session_state.page == 'config':
     st.markdown("---")
 
-    # Erstelle ein zentriertes Layout mit 3 Spalten
+    # zentriertes Layout mit 3 Spalten
     col1, col2, col3 = st.columns([1, 2, 1])
 
     with col2:
@@ -832,7 +821,7 @@ if st.session_state.page == 'config':
         st.markdown("### 📋 Eigene Kriterien hinzufügen")
         st.markdown("Füge spezifische Bewertungskriterien für deine Investment-These hinzu:")
 
-        # Button zum Hinzufügen eines neuen Kriteriums
+        # Button zum Hinzufügen eines eigenen Kriteriums
         if st.button("➕ Neues Kriterium hinzufügen", key="add_criterion"):
             st.session_state.additional_criteria.append({"weight": "mittel", "description": ""})
             st.rerun()
@@ -873,7 +862,7 @@ if st.session_state.page == 'config':
 
         st.markdown("---")
 
-        # Red Flags Definition
+        # Red Flags Definition für Assistenten
         st.markdown("### 🚨 Red Flags")
         red_flags_text = st.text_area(
             "K.O.-Kriterien (eine pro Zeile)",
@@ -932,7 +921,7 @@ elif st.session_state.page == 'results':
             with st.status("📊 Pitch Deck wird analysiert...", expanded=True) as status:
                 st.write("PDF wird gelesen und ausgewertet...")
 
-                # Erstelle Instruktion mit gewichteten Kriterien
+                # Erstelle Instruktion mit System Instructions und gewichteten Kriterien
                 combined_instruction = build_instruction_with_weights(
                     criteria_weights=st.session_state.criteria_weights,
                     additional_criteria=st.session_state.additional_criteria
@@ -1037,7 +1026,7 @@ elif st.session_state.page == 'results':
                 )
 
                 if summary_success:
-                    st.write("✅ Zusammenfassung erstellt")
+                    st.write("✅ Zusammenfassung erstellt") #Updates für Benutzer
                     status.update(label="✅ Zusammenfassung erstellt", state="complete")
                 else:
                     st.error("❌ Fehler beim Erstellen der Zusammenfassung")
@@ -1098,7 +1087,7 @@ elif st.session_state.page == 'results':
             if color_class == 'green':
                 st.success("Beide Analysen prognostizieren Erfolg")
             elif color_class == 'red':
-                # Prüfe ob Red Flags der Grund für die rote Ampel sind
+                # Prüfung ob Red Flags der Grund für die rote Ampel sind
                 if results.get('red_flags') and results['red_flags'].get('triggered'):
                     st.error(f"🚨 K.O.-Kriterium getroffen: {len(results['red_flags']['triggered'])} Red Flag(s)")
                 else:
@@ -1171,7 +1160,7 @@ elif st.session_state.page == 'results':
 
         st.markdown("---")
 
-        # Detaillierte Begründungen in Akkordeons
+        # Detaillierte Begründungen in Akkordeon-Elementen
         st.markdown("### 🔍 Detaillierte Analyse")
 
         with st.expander("📄 Pitch Deck Analyse", expanded=False):

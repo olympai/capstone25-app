@@ -7,7 +7,7 @@ Enthält Funktionen für:
 - Executive Summary Formatierung
 - Ampel-Bewertung und Key Findings
 """
-
+#import packages
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch, cm
@@ -107,7 +107,7 @@ def clean_and_simplify_text(text: str) -> str:
         if re.match(r'^[-*+•]\s+', line):
             line = re.sub(r'^[-*+•]\s+', '• ', line)
 
-        # Jetzt Markdown-Formatierung auf der Zeile
+        # Markdown-Formatierung auf der Zeile
         # Konvertiere Bold-Text (**text** und __text__)
         line = re.sub(r'\*\*([^\*]+)\*\*', r'<b>\1</b>', line)
         line = re.sub(r'__([^_]+)__', r'<b>\1</b>', line)
