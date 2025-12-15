@@ -4,8 +4,6 @@
 
 An AI-powered Streamlit application that analyzes startup pitch decks using Claude AI. The system evaluates pitch decks across seven key investment dimensions (Company, Competition, Financials, Market, Product, Team, Technology), conducts automated web research to validate claims and fill information gaps, then synthesizes findings into a traffic light assessment and executive summary.
 
-**Disclaimer:** This tool generates analytical signals to support due diligence processes. Outputs represent AI-based interpretations and should not be used as the sole basis for investment decisions. Professional judgment and comprehensive due diligence remain essential.
-
 ## Quickstart
 
 ```bash
@@ -170,4 +168,4 @@ run.sh                      # Start Script
 License not specified. Contact repository maintainer for licensing information and usage rights.
 
 ## Use of AI
-Claude by Anthropic was used to support bug fixing and testing throughout the development process.
+Claude by Anthropic was used in the development of this application's frontend, including the design and implementation of the Streamlit user interface, component layout, and interactive features. AI assistance was also utilized for bug fixing and testing throughout the development process.
